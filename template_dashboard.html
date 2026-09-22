@@ -1108,16 +1108,17 @@ function bindPOIs(){
   var ps=gPois.querySelectorAll('circle.poi');
   var groups={};
   for(var i=0;i<ps.length;i++){
-    var el=ps[i], cxx=el.getAttribute('cx'), cyy=el.getAttribute('cy');
-    (groups[cxx+'_'+cyy]=groups[cxx+'_'+cyy]||[]).push(el);
-    el.addEventListener('mousemove', function(ev){ moveTip(ev, tipPOI(+el.getAttribute('data-i'))); });
-    el.addEventListener('mouseleave', hideTip);
-    el.addEventListener('click', function(ev){
-      ev.stopPropagation();
-      if(PT.dragging) return;
-      var j=+el.getAttribute('data-i');
-      scheduleSelect(function(){ choosePOI(j); });
-    });
+    (function(el,cxx,cyy){
+      (groups[cxx+'_'+cyy]=groups[cxx+'_'+cyy]||[]).push(el);
+      el.addEventListener('mousemove', function(ev){ moveTip(ev, tipPOI(+el.getAttribute('data-i'))); });
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        if(PT.dragging) return;
+        var j=+el.getAttribute('data-i');
+        scheduleSelect(function(){ choosePOI(j); });
+      });
+    })(ps[i], ps[i].getAttribute('cx'), ps[i].getAttribute('cy'));
   }
 }
 function choosePOI(i){
