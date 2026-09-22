@@ -25,6 +25,9 @@ embebidos. También está publicado en vivo vía **GitHub Pages**.
 | 🏙️ **Desarrollo** | ¿Dónde hay saturación o vacíos? | teal = densidad |
 
 ### Interacciones
+- 📱 **Responsive (mapa primero)**: en móvil/tablet el mapa ocupa la pantalla y el
+  panel lateral se vuelve una hoja deslizable inferior; controles táctiles
+  ampliados, header compacto y búsqueda sin zoom automático de iOS.
 - 🖱️ **Arrastrar** para mover · **rueda / doble clic / pellizco** para zoom.
 - Clic en **manzana** → resalte dorado pulsante + **zoom automático de 4.6×** y
   ficha con **mensaje puntual de esa manzana** según el modo activo.
