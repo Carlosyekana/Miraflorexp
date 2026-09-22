@@ -153,9 +153,9 @@ Resultado del cruce (zona de estudio Kennedy–Larco–La Mar, 158 ha):
 
 ```
 Manzanas catastrales: 172   ·   Lotes: 2 097   ·   Puertas: 6 752
-Locales visibles (proxy): 1 331
-  Con respaldo formal en su calle:    590  (44.3%)
-  Sin licencia compatible (brecha):   741  (55.7%)
+Locales visibles (proxy): 1 316  (tras deduplicar 15 registros dobles de OSM)
+  Con respaldo formal en su calle:    583  (44.3%)
+  Sin licencia compatible (brecha):   733  (55.7%)
 Licencias georreferenciadas: 5 511  (sobre 10 249 del distrito)
 ```
 

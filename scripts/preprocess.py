@@ -137,6 +137,69 @@ print("POIs crudos extraídos de OSM:", len(pois))
 pois = [p for p in pois if xmin-pad <= p["lon"] <= xmax+pad and ymin-pad <= p["lat"] <= ymax+pad]
 print("POIs en zona de estudio:", len(pois))
 
+# ------------------------------------------------------------------ deduplicar POIs
+# OSM suele listar el mismo negocio 2 veces (nodo + contorno, o doble alta).
+# Regla segura: mismo nombre a <=30m, o nombre contenido en otro a <=30m y mismo rubro → fundir.
+import math
+def _norm_name(s):
+    s = unicodedata.normalize('NFKD', str(s or '')).encode('ascii', 'ignore').decode().lower()
+    s = re.sub(r'[^a-z0-9]+', ' ', s)
+    s = re.sub(r'\b(la|el|los|las|de|del|y|e)\b', ' ', s)
+    return re.sub(r'\s+', ' ', s).strip()
+
+def _catfam(cat):
+    c = str(cat or '')
+    if c.startswith('shop:') or c in ('marketplace', 'mall'): return 'shop'
+    if c in ('restaurant','cafe','fast_food','food_court','bar','pub','nightclub','ice_cream','bakery','canteen','biergarten'): return 'food'
+    if c in ('tourism:hotel','tourism:hostel','tourism:guest_house','tourism:motel','tourism:chalet','tourism:apartment'): return 'lodging'
+    if c in ('bank','atm','bureau_de_change','money_transfer'): return 'bank'
+    if c in ('pharmacy','dentist','doctors','clinic','hospital','veterinary','shop:chemist','shop:optician'): return 'health'
+    if c in ('school','college','university','kindergarten','language_school','music_school'): return 'edu'
+    return 'g:' + c
+
+def _dist_m(a, b):
+    R = 6371000
+    p1, p2 = math.radians(a["lat"]), math.radians(b["lat"])
+    dp, dl = math.radians(b["lat"] - a["lat"]), math.radians(b["lon"] - a["lon"])
+    h = math.sin(dp/2)**2 + math.cos(p1) * math.cos(p2) * math.sin(dl/2)**2
+    return 2 * R * math.asin(math.sqrt(h))
+
+def _richness(p):
+    return sum(1 for k in ('phone','website','hours','cuisine','brand') if p.get(k))
+
+def _merge_into(keep, drop_p):
+    for k in ('phone','website','hours','cuisine','brand','name'):
+        if not keep.get(k) and drop_p.get(k):
+            keep[k] = drop_p[k]
+
+def dedup_pois(pois, maxd_m=30):
+    n = len(pois); drop = set()
+    for i in range(n):
+        if i in drop: continue
+        ni = _norm_name(pois[i].get('name'))
+        if not ni or len(ni) < 4: continue
+        for j in range(i+1, n):
+            if j in drop: continue
+            nj = _norm_name(pois[j].get('name'))
+            if not nj or len(nj) < 4: continue
+            if _dist_m(pois[i], pois[j]) > maxd_m: continue
+            same = (ni == nj)
+            cont = ((ni in nj or nj in ni) and min(len(ni), len(nj)) >= 6)
+            if not (same or cont): continue
+            # mismo nombre: fundir siempre; nombre contenido: solo si mismo rubro
+            if same or _catfam(pois[i]['cat']) == _catfam(pois[j]['cat']):
+                keep, rem = (i, j)
+                if _richness(pois[j]) > _richness(pois[i]):
+                    keep, rem = (j, i)
+                _merge_into(pois[keep], pois[rem])
+                drop.add(rem)
+    removed = len(drop)
+    out = [p for idx, p in enumerate(pois) if idx not in drop]
+    print(f"deduplicación POIs: eliminados {removed} duplicados → quedan {len(out)}")
+    return out
+
+pois = dedup_pois(pois)
+
 # ------------------------------------------------------------------ respaldo por calle
 # reglas giro → categorías compatibles
 RULES = [
