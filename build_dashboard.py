@@ -261,6 +261,27 @@ labels.append({"t": "Parque Kennedy", "lon": -77.0301, "lat": -12.1240, "ang": 0
 street_counts = Counter(p.get("street_name") or "" for p in pois if p.get("street_name"))
 streets = [{"name": n, "n": c} for n, c in street_counts.most_common(14)]
 
+# ------------------------------------------------------------------ índice de búsqueda
+# calles con bbox (desde la geometría oficial de vías)
+calle_bb = {}
+for f in vias["features"]:
+    p = f["properties"]; nome = p.get("nomenclatura") or ""
+    if not f["geometry"] or not nome: continue
+    g = shape(f["geometry"])
+    x0, y0, x1, y1 = g.bounds
+    if nome in calle_bb:
+        a = calle_bb[nome]
+        calle_bb[nome] = [min(a[0], x0), min(a[1], y0), max(a[2], x1), max(a[3], y1)]
+    else:
+        calle_bb[nome] = [x0, y0, x1, y1]
+calles = [{"name": n, "bb": [round(v, 6) for v in bb]} for n, bb in calle_bb.items()]
+
+# locales con nombre para búsqueda
+localesIndex = [
+    {"i": i, "name": p["name"], "cat": p["cat"], "address": p.get("address", "")}
+    for i, p in enumerate(pois) if p.get("name")
+]
+
 un = sum(1 for p in pois if not p.get("respaldado"))
 rsp = sum(1 for p in pois if p.get("respaldado"))
 data = {
@@ -281,6 +302,8 @@ data = {
               "lon": round(p["lon"], 6), "lat": round(p["lat"], 6)} for p in pois],
     "streets": streets,
     "labels": labels,
+    "calles": calles,
+    "localesIndex": localesIndex,
 }
 
 out = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
@@ -290,4 +313,5 @@ print("meta:", data["meta"])
 tpl = open("template_dashboard.html", encoding="utf-8").read()
 html = tpl.replace("__DATA_JSON__", out)
 open("dashboard_miraflores.html", "w", encoding="utf-8").write(html)
+open("index.html", "w", encoding="utf-8").write(html)   # para GitHub Pages
 print("dashboard_miraflores.html:", len(html)//1024, "KB")

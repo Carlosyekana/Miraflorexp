@@ -160,6 +160,81 @@
   #legend .grad{height:8px;border-radius:4px;margin:6px 0 2px;}
   #legend .gmin{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);}
 
+  /* ---------- búsqueda ---------- */
+  #searchWrap{position:absolute; left:14px; top:12px; z-index:36; width:300px;}
+  #searchBox{position:relative;}
+  #searchInput{
+    width:100%; height:38px; padding:0 12px 0 34px; border:1px solid var(--line); border-radius:11px;
+    font-size:13px; color:var(--ink); background:rgba(255,255,255,.98); box-shadow:var(--shadow2);
+    outline:none; transition:border-color .12s, box-shadow .12s;
+  }
+  #searchInput:focus{border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,138,147,.15);}
+  #searchInput::placeholder{color:var(--mut2);}
+  #searchGlass{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--mut); pointer-events:none;}
+  #sugList{
+    position:absolute; top:44px; left:0; right:0; background:#fff; border:1px solid var(--line2);
+    border-radius:12px; box-shadow:0 14px 40px rgba(11,46,77,.18); overflow:hidden; display:none; z-index:50;
+    max-height:320px; overflow-y:auto;
+  }
+  #sugList.on{display:block;}
+  .sug{padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--line2); display:flex; align-items:center; gap:9px;}
+  .sug:last-child{border-bottom:none;}
+  .sug:hover,.sug.sel{background:#eef6f6;}
+  .sug .ic{width:22px;height:22px;border-radius:6px;background:#eef1f5;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+  .sug .tt{font-weight:700; font-size:12.5px; color:var(--ink);}
+  .sug .sb{font-size:10.5px; color:var(--mut); margin-top:1px;}
+  .sug .go{margin-left:auto; color:var(--teal); font-size:10.5px; font-weight:800; opacity:0; transition:opacity .12s;}
+  .sug:hover .go,.sug.sel .go{opacity:1;}
+
+  /* ---------- chip volver a la selección ---------- */
+  #retChip{
+    position:absolute; left:50%; bottom:18px; transform:translateX(-50%) translateY(20px); z-index:34;
+    background:var(--navy); color:#fff; border:none; border-radius:22px; padding:8px 16px; font-size:12px;
+    font-weight:800; cursor:pointer; box-shadow:var(--shadow2); opacity:0; pointer-events:none; transition:all .22s;
+    display:flex; align-items:center; gap:7px;
+  }
+  #retChip.on{opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0);}
+  #retChip:hover{background:var(--navy2);}
+
+  /* ---------- chip filtro de rubro ---------- */
+  #filterChip{
+    position:absolute; left:14px; bottom:18px; z-index:34; background:var(--red); color:#fff; border:none;
+    border-radius:22px; padding:8px 14px; font-size:12px; font-weight:800; cursor:pointer; box-shadow:var(--shadow2);
+    display:none; align-items:center; gap:8px; animation:pop .18s ease;
+  }
+  #filterChip.on{display:flex;}
+  #filterChip span.x{background:rgba(255,255,255,.25); width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px;}
+
+  /* ---------- agrupación (clusters) ---------- */
+  .clusterDot{cursor:pointer;}
+  .clusterDot:hover{stroke:#0a1d33 !important; stroke-width:2.2 !important;}
+
+  /* ---------- affordances clicables ---------- */
+  #map path.mz{cursor:pointer; transition:filter .12s;}
+  #map path.mz:hover{stroke:#0a1d33 !important; stroke-width:1.8 !important;}
+  #map circle.poi{cursor:pointer;}
+  #map circle.poi:hover{stroke:#0a1d33 !important; stroke-width:1.7 !important;}
+  #map circle.poi.dim{fill-opacity:0.12;}
+  #map circle.poi.selring{stroke:#ffd479 !important; stroke-width:2.4 !important;}
+  #map path.viahl{stroke:var(--teal) !important; stroke-width:3.2 !important;}
+
+  /* ---------- panel ocultable ---------- */
+  .shell aside{transition:margin-right .25s ease;}
+  .shell.noPanel aside{display:none;}
+  #panelTgl{
+    background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.28); color:#fff; width:34px; height:34px;
+    border-radius:10px; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;
+    transition:background .13s;
+  }
+  #panelTgl:hover{background:rgba(255,255,255,.22);}
+
+  /* bars clickeables */
+  .bars .brow{cursor:pointer;}
+  .bars .brow .lbl .n{transition:color .12s;}
+  .bars .brow:hover .lbl .n{color:var(--teal);}
+  .bars .brow.on .tr{outline:2px solid var(--teal); outline-offset:1px;}
+  .bars .brow.on .lbl .n{color:var(--teal);}
+
   /* selection card (modal over map) */
   #selcard{
     position:absolute; left:14px; top:14px; width:312px; background:#fff; border-radius:16px;
@@ -356,6 +431,7 @@
   <div class="hdr-right">
     <div class="hdr-chip"><span class="d">Zona de estudio</span><span class="z mono" id="zHdr">— ha</span></div>
     <div class="hdr-chip"><span class="d">Manzanas / Lotes</span><span class="z mono" id="mHdr">—</span></div>
+    <button id="panelTgl" title="Mostrar / ocultar panel lateral">◫</button>
     <div class="badge">Piloto demostrativo</div>
   </div>
 </header>
@@ -370,9 +446,12 @@
       </svg>
       <div id="tooltip"></div>
 
-      <div id="sectorChip">
-        <div class="t">Sector Kennedy · eje comercial</div>
-        <div class="s"><b>158 ha</b> · manzanas 172 · lotes 2 097 · puertas 6 752</div>
+      <div id="searchWrap" class="mono-note">
+        <div id="searchBox">
+          <span id="searchGlass">🔎</span>
+          <input id="searchInput" type="text" placeholder="Buscar calle, rubro o local…" autocomplete="off">
+          <div id="sugList"></div>
+        </div>
       </div>
 
       <div id="layerPanel">
@@ -400,6 +479,8 @@
 
       <div id="readout">lat — · lon — · zoom ×1.0</div>
       <div id="scalebar"><div class="bar" id="scalebarBar"></div><div class="lbl" id="scalebarLbl">100 m</div></div>
+      <button id="retChip">⟲ Volver a la selección</button>
+      <button id="filterChip"><span id="filterLabel">Rubro</span><span class="x">×</span></button>
 
       <div id="legend">
         <div class="tl">Lectura del mapa</div>
@@ -517,7 +598,9 @@ var scene = document.getElementById('scene');
 var state = {
   mode:'fisc', selMZ:null, selPOI:null, checked:{}, tariff:3240,
   s:1, tx:0, ty:0,             // scene transform: translate(tx,ty) scale(s)
-  layers:{lotes:true, numeracion:false, pois:true}
+  layers:{lotes:true, numeracion:false, pois:true},
+  selState:'none',             // 'none' | 'mz' | 'poi'
+  filterCat:null               // categoría de POI activa en el filtro de rubro
 };
 
 /* ================= agregados ================= */
@@ -545,22 +628,28 @@ function fmtHa(m2){ return (m2/10000).toFixed(1); }
 
 /* ================= construir capas ================= */
 var gLotes=null, gMz=null, gVias=null, gPois=null, gNum=null, gLabels=null;
+var gStreetLabelsMaj=null, gStreetLabelsLoc=null;
 function manzPath(m){
   var s='';
   for(var i=0;i<m.pts.length;i++){ s+=(i===0?'M':'L')+pX(m.pts[i][0]).toFixed(1)+' '+pY(m.pts[i][1]).toFixed(1)+' '; }
   return s+'Z';
 }
+function creator(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
 function buildLayers(){
   var ns = ' vector-effect="non-scaling-stroke"';
 
-  // vías
+  // vías (con identidad para poder resaltarlas al buscar)
   var v='';
   DATA.vias.forEach(function(vl){
     var s='';
     for(var i=0;i<vl.pts.length;i++){ s+=(i===0?'M':'L')+pX(vl.pts[i][0]).toFixed(1)+' '+pY(vl.pts[i][1]).toFixed(1)+' '; }
-    v+='<path d="'+s+'" fill="none" stroke="#d3cdbd" stroke-width="'+(vl.w||1.2)+'" stroke-linecap="round"'+ns+'/>';
+    v+='<path class="via" data-n="'+esc(vl.n||'')+'" data-clas="'+esc(vl.clas||'')+'" d="'+s+'" fill="none" stroke="#d3cdbd" stroke-width="'+(vl.w||1.2)+'" stroke-linecap="round"'+ns+'/>';
   });
   gVias = creator('g'); gVias.innerHTML = v;
+
+  // labels de calles (principales siempre visibles, locales solo al acercar)
+  buildStreetLabels();
 
   // manzanas (choropleth)
   gMz = creator('g'); renderMzFills();
@@ -581,17 +670,10 @@ function buildLayers(){
   });
   gNum = creator('g'); gNum.innerHTML = n; gNum.style.display='none';
 
-  // POIs
-  var pp='';
-  DATA.pois.forEach(function(p,i){
-    var col = p.resp ? '#2f8f5b' : '#cf4440';
-    var r = p.resp ? 2.55 : 2.95;
-    pp += '<circle class="poi" data-i="'+i+'" data-r="'+r+'" cx="'+pX(p.lon).toFixed(1)+'" cy="'+pY(p.lat).toFixed(1)
-        + '" r="'+r+'" fill="'+col+'" fill-opacity="0.88" stroke="#fff" stroke-width="0.6"'+ns+'/>';
-  });
-  gPois = creator('g'); gPois.innerHTML = pp;
+  // POIs (con clustering según zoom)
+  gPois = creator('g'); state.poiMode='unset'; renderPOIs();
 
-  // labels
+  // labels de hitos
   var ll='';
   DATA.labels.forEach(function(lb){
     ll += '<text x="'+pX(lb.lon).toFixed(1)+'" y="'+pY(lb.lat).toFixed(1)+'" font-size="9.5" fill="#8a8372" '
@@ -599,12 +681,77 @@ function buildLayers(){
   });
   gLabels = creator('g'); gLabels.innerHTML = ll;
 
-  scene.appendChild(gVias); scene.appendChild(gLotes); scene.appendChild(gMz);
-  scene.appendChild(gNum); scene.appendChild(gPois); scene.appendChild(gLabels);
+  scene.appendChild(gVias); scene.appendChild(gStreetLabelsMaj); scene.appendChild(gStreetLabelsLoc);
+  scene.appendChild(gLotes); scene.appendChild(gMz); scene.appendChild(gNum);
+  scene.appendChild(gPois); scene.appendChild(gLabels);
 
-  applyLayers(); bindStatic();
+  applyLayers(); bindLotes(); bindMZ();
 }
-function creator(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+/* labels de calles: calcula punto medio y ángulo de cada vía con nombre */
+function buildStreetLabels(){
+  var maj='', loc='';
+  DATA.vias.forEach(function(vl){
+    if(!vl.n) return;
+    var pts=vl.pts, total=0, segs=[];
+    for(var i=0;i<pts.length-1;i++){
+      var x1=pX(pts[i][0]), y1=pY(pts[i][1]), x2=pX(pts[i+1][0]), y2=pY(pts[i+1][1]);
+      var d=Math.hypot(x2-x1, y2-y1); segs.push([x1,y1,x2,y2,d]); total+=d;
+    }
+    var isMaj = (vl.clas==='PRINCIPALES'||vl.clas==='COLECTORAS');
+    if(total < (isMaj?55:90)) return;                    // descarta vías cortas
+    var half=total/2, acc=0, mx=0, my=0, ang=0;
+    for(var j=0;j<segs.length;j++){
+      var s2=segs[j];
+      if(acc+s2[4]>=half){ var f=(half-acc)/s2[4]; mx=s2[0]+(s2[2]-s2[0])*f; my=s2[1]+(s2[3]-s2[1])*f; ang=Math.atan2(s2[3]-s2[1], s2[2]-s2[0])*180/Math.PI; break; }
+      acc+=s2[4];
+    }
+    if(!mx && !my) return;
+    if(ang>90||ang<-90) ang+=180;
+    var lbl='<text class="stlbl" x="'+mx.toFixed(1)+'" y="'+my.toFixed(1)+'" font-size="'+(isMaj?9.5:8.5)+'" fill="'+(isMaj?'#6f6a5e':'#97917f')+'" font-family="Arial" font-weight="700" transform="rotate('+ang.toFixed(1)+' '+mx.toFixed(1)+' '+my.toFixed(1)+')">'+esc(vl.n)+'</text>';
+    if(isMaj) maj+=lbl; else loc+=lbl;
+  });
+  gStreetLabelsMaj = creator('g'); gStreetLabelsMaj.innerHTML = maj;
+  gStreetLabelsLoc = creator('g'); gStreetLabelsLoc.innerHTML = loc;
+  gStreetLabelsLoc.style.display='none';
+}
+
+/* POIs: clustering al alejarse, puntos al acercar */
+function renderPOIs(){
+  var cluster = state.s < 1.9;
+  state.poiMode = cluster ? 'cluster' : 'single';
+  var ns = ' vector-effect="non-scaling-stroke"';
+  var el='';
+  var src = DATA.pois.filter(function(p){ return !state.filterCat || p.cat===state.filterCat; });
+  if(cluster){
+    var G=24, cells={};
+    src.forEach(function(p){
+      var k=Math.round(pX(p.lon)/G)+','+Math.round(pY(p.lat)/G);
+      (cells[k]=cells[k]||[]).push(p);
+    });
+    for(var k in cells){
+      var ids=cells[k], x=0, y=0, un=0;
+      ids.forEach(function(p){ x+=pX(p.lon); y+=pY(p.lat); if(!p.resp) un++; });
+      x/=ids.length; y/=ids.length;
+      var base = ids.length<=3?3.6 : ids.length<=8?5 : 6.6;
+      var col = un>0 ? RED : [47,143,91];
+      el += '<circle class="cld clusterDot" data-n="'+ids.length+'" data-r="'+base+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+base+'" fill="'+hex(lerp(BASE,col,0.9))+'" fill-opacity="0.96" stroke="#ffffff" stroke-width="1.4"'+ns+'/>';
+      if(ids.length>=3) el += '<text class="cnt" x="'+x.toFixed(1)+'" y="'+(y+3.2).toFixed(1)+'" font-size="9" font-weight="800" text-anchor="middle" fill="#fff">'+ids.length+'</text>';
+    }
+  } else {
+    src.forEach(function(p){
+      var i = DATA.pois.indexOf(p);
+      var col = p.resp ? '#2f8f5b' : '#cf4440';
+      var r = p.resp ? 2.55 : 2.95;
+      el += '<circle class="poi" data-i="'+i+'" data-r="'+r+'" cx="'+pX(p.lon).toFixed(1)+'" cy="'+pY(p.lat).toFixed(1)
+          + '" r="'+r+'" fill="'+col+'" fill-opacity="0.88" stroke="#ffffff" stroke-width="0.6"'+ns+'/>';
+    });
+  }
+  gPois.innerHTML = el;
+  bindPOIs(); bindClusters();
+}
+
+function buildStreetLabelsDummy(){}
 
 function renderMzFills(){
   var mmax = maxMZ(); var s='';
@@ -642,7 +789,18 @@ function zoomAt(vx, vy, factor){
   state.tx = vx - (vx - state.tx)*k;
   state.ty = vy - (vy - state.ty)*k;
   state.s = ns;
-  applyTransform(); updateRadii(); updateScalebar();
+  afterViewChange();
+}
+function renderStreetVisibility(){
+  if(!gStreetLabelsLoc) return;
+  gStreetLabelsLoc.style.display = (state.s >= 2.6) ? '' : 'none';
+}
+function afterViewChange(){
+  applyTransform(); updateRadii(); updateScalebar(); renderStreetVisibility();
+  // cruce de umbral de clustering
+  if(state.poiMode!=='cluster' && state.s < 1.9){ renderPOIs(); }
+  else if(state.poiMode==='cluster' && state.s >= 1.9){ renderPOIs(); }
+  highlightSelection();
 }
 function applyTransform(){
   scene.setAttribute('transform','translate('+state.tx+' '+state.ty+') scale('+state.s+')');
@@ -655,6 +813,8 @@ function updateRadii(){
   for(i=0;i<pois.length;i++){ el=pois[i]; el.setAttribute('r', (+el.getAttribute('data-r')/s).toFixed(2)); }
   var nd=gNum.querySelectorAll('circle.numdot');
   for(i=0;i<nd.length;i++){ el=nd[i]; el.setAttribute('r', (1.15/s).toFixed(2)); }
+  var cl=gPois.querySelectorAll('circle.cld');
+  for(i=0;i<cl.length;i++){ el=cl[i]; el.setAttribute('r', (+el.getAttribute('data-r')/s).toFixed(2)); }
 }
 function updateScalebar(){
   var s=state.s;
@@ -772,7 +932,7 @@ function goPreset(name){
     function step(tt){
       var k=Math.min(1,(tt-t0)/dur); k=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
       state.s=fs+(ts-fs)*k; state.tx=fcx+(ttx-fcx)*k; state.ty=fcy+(tty-fcy)*k;
-      applyTransform(); updateRadii(); updateScalebar();
+      afterViewChange();
       if(k<1) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
@@ -809,21 +969,71 @@ function bindMZ(){
     })(ms[i]);
   }
 }
-function bindStatic(){
-  bindMZ();
-  var ps=gPois.querySelectorAll('circle.poi');
-  for(var i=0;i<ps.length;i++){
+function poiXY(p){ return [pX(p.lon), pY(p.lat)]; }
+function bindClusters(){
+  var cls=gPois.querySelectorAll('circle.cld');
+  for(var i=0;i<cls.length;i++){
     (function(el){
-      el.addEventListener('mousemove', function(ev){ moveTip(ev, tipPOI(+el.getAttribute('data-i'))); });
+      el.addEventListener('mousemove', function(ev){
+        var ids=[], kx=+el.getAttribute('cx'), ky=+el.getAttribute('cy');
+        var n=+el.getAttribute('data-n');
+        moveTip(ev, '<b>'+(n===1?'1 local':n+' locales')+'</b> en este punto<br><span class="mut2">clic para acercar y verlos</span>');
+      });
       el.addEventListener('mouseleave', hideTip);
       el.addEventListener('click', function(ev){
         ev.stopPropagation();
         if(PT.dragging) return;
-        var j=+el.getAttribute('data-i');
-        scheduleSelect(function(){ clickPOI(j); });
+        zoomAt(+el.getAttribute('cx'), +el.getAttribute('cy'), 3.0);
       });
-    })(ps[i]);
+    })(cls[i]);
   }
+}
+function bindPOIs(){
+  var ps=gPois.querySelectorAll('circle.poi');
+  var groups={};
+  for(var i=0;i<ps.length;i++){
+    var el=ps[i], cxx=el.getAttribute('cx'), cyy=el.getAttribute('cy');
+    (groups[cxx+'_'+cyy]=groups[cxx+'_'+cyy]||[]).push(el);
+    el.addEventListener('mousemove', function(ev){ moveTip(ev, tipPOI(+el.getAttribute('data-i'))); });
+    el.addEventListener('mouseleave', hideTip);
+    el.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      if(PT.dragging) return;
+      var j=+el.getAttribute('data-i');
+      scheduleSelect(function(){ choosePOI(j); });
+    });
+  }
+}
+function choosePOI(i){
+  var p=DATA.pois[i];
+  // varios puntos coinciden en la misma posición (sin cluster por zoom intermedio)
+  var same = DATA.pois.filter(function(q){ return q.lon===p.lon && q.lat===p.lat; });
+  if(same.length>1){
+    showPicker(p.lon, p.lat, same);
+    return;
+  }
+  clickPOI(i);
+}
+function showPicker(lon, lat, items){
+  state.pickerPOIs = items.map(function(q){ return DATA.pois.indexOf(q); });
+  var html='<div class="sec">'+items.length+' locales en este punto</div>';
+  items.forEach(function(q,idx){
+    var i=DATA.pois.indexOf(q);
+    html+='<div class="item" data-poi="'+i+'"><span class="c" style="background:'+(q.resp?'#2f8f5b':'#cf4440')+';"></span>'
+      + '<div><div class="nm">'+esc(q.name||'(sin nombre)')+'</div>'
+      + '<div class="ct">'+esc(cleanCat(q.cat))+' · '+(q.resp?'con respaldo':'en brecha')+'</div></div></div>';
+  });
+  document.getElementById('selTitle').textContent='Elige un local';
+  document.getElementById('selTags').innerHTML='<span class="chip">varios en el punto</span>';
+  document.getElementById('selBody').innerHTML=html;
+  selcard.classList.add('on');
+  animateTo2(pX(lon), pY(lat), Math.max(state.s, 5.0));
+  var its=selcard.querySelectorAll('.item');
+  for(var k=0;k<its.length;k++){
+    (function(el){ el.addEventListener('click', function(){ clickPOI(+el.getAttribute('data-poi')); }); })(its[k]);
+  }
+}
+function bindLotes(){
   var ls=gLotes.querySelectorAll('path.lote');
   for(var j=0;j<ls.length;j++){
     (function(el){
@@ -834,8 +1044,7 @@ function bindStatic(){
 }
 function scheduleSelect(fn){
   clearTimeout(pendingSelect);
-  if(performance.now()-selectAt < 250){ clearTimeout(pendingSelect); return; }
-  pendingSelect = setTimeout(function(){ selectAt=performance.now(); fn(); }, 210);
+  pendingSelect = setTimeout(function(){ fn(); }, 220);
 }
 
 /* ================= tooltip ================= */
@@ -875,17 +1084,27 @@ function tipLote(el){
 var selcard=document.getElementById('selcard');
 function clickMZ(i){
   var m=DATA.manzanas[i]; if(!m) return;
-  state.selMZ=i; state.selPOI=null;
-  // reconstruir solo fills y bind
+  state.selMZ=i; state.selPOI=null; state.selState='mz';
   gMz.innerHTML=''; renderMzFills();
   showCardMZ(m);
+  updateRetChip();
   animateTo2(pX(m.cx), pY(m.cy), Math.max(state.s, 3.0));
 }
 function clickPOI(i){
   var p=DATA.pois[i]; if(!p) return;
-  state.selPOI=i; state.selMZ=null; renderMzFills();
+  state.selPOI=i; state.selMZ=null; state.selState='poi'; renderMzFills();
   showCardPOI(p);
+  updateRetChip();
   animateTo2(pX(p.lon), pY(p.lat), Math.max(state.s, 5.0));
+}
+function highlightSelection(){
+  // ring alrededor de la manzana o local seleccionado para no perder contexto
+  gPois.querySelectorAll('circle.poi').forEach(function(el){ el.classList.remove('selring'); });
+  if(state.selPOI!==null && state.selPOI!==undefined){
+    var sel = gPois.querySelector('circle.poi[data-i="'+state.selPOI+'"]');
+    if(sel) sel.classList.add('selring');
+  }
+  renderMzFills();
 }
 function animateTo2(cx, cy, ns){
   var ttx = VW/2 - cx*ns, tty = VH/2 - cy*ns;
@@ -894,15 +1113,25 @@ function animateTo2(cx, cy, ns){
   function step(tt){
     var k=Math.min(1,(tt-t0)/dur); k=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
     state.s=fs+(ns-fs)*k; state.tx=fcx+(ttx-fcx)*k; state.ty=fcy+(tty-fcy)*k;
-    applyTransform(); updateRadii(); updateScalebar();
+    afterViewChange();
     if(k<1) requestAnimationFrame(step);
   }
   selcard.classList.add('on');
   requestAnimationFrame(step);
 }
 document.getElementById('selClose').addEventListener('click', function(){
-  selcard.classList.remove('on'); state.selMZ=null; state.selPOI=null;
+  selcard.classList.remove('on'); state.selMZ=null; state.selPOI=null; state.selState='none';
   if(gMz) renderMzFills();
+  updateRetChip();
+});
+function updateRetChip(){
+  var chip=document.getElementById('retChip');
+  if(state.selState!=='none'){ chip.classList.add('on'); }
+  else { chip.classList.remove('on'); }
+}
+document.getElementById('retChip').addEventListener('click', function(){
+  if(state.selState==='mz' && state.selMZ!==null){ var m=DATA.manzanas[state.selMZ]; animateTo2(pX(m.cx), pY(m.cy), Math.max(state.s,3.0)); }
+  else if(state.selState==='poi' && state.selPOI!==null){ var p=DATA.pois[state.selPOI]; animateTo2(pX(p.lon), pY(p.lat), Math.max(state.s,5.0)); }
 });
 
 function zonInfo(m){
@@ -965,6 +1194,130 @@ function showCardPOI(p){
 function setChecked(k,on){ if(on) state.checked[k]=true; else delete state.checked[k]; }
 function isChecked(k){ return !!state.checked[k]; }
 
+/* ================= búsqueda ================= */
+function focusNClear(){ var inp=document.getElementById('searchInput'); inp.value=''; document.getElementById('sugList').classList.remove('on'); hideTip(); }
+function norm2(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim(); }
+var sui=document.getElementById('searchInput'), sug=document.getElementById('sugList'), sugSel=-1;
+sui.addEventListener('input', function(){ renderSug(); });
+sui.addEventListener('focus', function(){ renderSug(); });
+document.getElementById('searchWrap').addEventListener('click', function(ev){ ev.stopPropagation(); });
+document.getElementById('mapwrap').addEventListener('click', function(){ sug.classList.remove('on'); });
+sui.addEventListener('keydown', function(e){
+  var items=sug.querySelectorAll('.sug');
+  if(e.key==='ArrowDown'){ e.preventDefault(); if(!items.length) return; sugSel=(sugSel+1)%items.length; markSug(items); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); if(!items.length) return; sugSel=(sugSel-1+items.length)%items.length; markSug(items); }
+  else if(e.key==='Enter'){ if(sugSel>=0&&items[sugSel]){ items[sugSel].click(); return; } if(items.length) items[0].click(); }
+  else if(e.key==='Escape'){ sug.classList.remove('on'); sui.blur(); }
+});
+function markSug(items){ for(var i=0;i<items.length;i++){ items[i].classList.toggle('sel', i===sugSel); } }
+function renderSug(){
+  var q=norm2(sui.value); sugSel=-1;
+  if(q.length<2){ sug.classList.remove('on'); return; }
+  // calles (bbox → navegar): prioriza coincidencia de prefijo, luego por contenido
+  var calles = DATA.calles
+    .map(function(c){ return {type:'calle', name:c.name, bb:c.bb, nn:norm2(c.name), score:(norm2(c.name).indexOf(q)===0?0:1)}; })
+    .filter(function(c){ return c.nn.indexOf(q)>=0; })
+    .sort(function(a,b){ return (a.score-b.score) || (a.name.length-b.name.length); })
+    .slice(0,5)
+    .map(function(c){ return {html:'<div class="ic">🛣️</div><div><div class="tt">'+esc(c.name)+'</div><div class="sb">Calle · ver plano</div></div><div class="go">IR →</div>', bb:c.bb, name:c.name}; });
+  // categorías
+  var cats = Object.keys(catAgg)
+    .filter(function(c){ return norm2(cleanCat(c)).indexOf(q)>=0; })
+    .sort(function(a,b){ return catAgg[b].unsup-catAgg[a].unsup; })
+    .slice(0,4)
+    .map(function(c){ return {html:'<div class="ic">🏷️</div><div><div class="tt">'+esc(cleanCat(c))+'</div><div class="sb">Filtrar el mapa por rubro</div></div><div class="go">FILTRAR →</div>', cat:c}; });
+  // manzanas
+  var mzs = DATA.manzanas
+    .filter(function(m){ return ('MZ '+m.cod).toLowerCase().indexOf(q)>=0; })
+    .slice(0,3)
+    .map(function(m){ return {html:'<div class="ic">▦</div><div><div class="tt">MZ '+esc(m.cod)+'</div><div class="sb">Manzana catastral</div></div><div class="go">IR →</div>', mz:m.i}; });
+  // locales por nombre
+  var locs = DATA.localesIndex
+    .filter(function(l){ return norm2(l.name).indexOf(q)>=0; })
+    .slice(0,4)
+    .map(function(l){ return {html:'<div class="ic">📍</div><div><div class="tt">'+esc(l.name)+'</div><div class="sb">'+esc(cleanCat(l.cat))+'</div></div><div class="go">IR →</div>', poi:l.i}; });
+  var all = calles.concat(locs).concat(cats).concat(mzs).slice(0,8);
+  if(!all.length){ sug.innerHTML='<div class="sug" style="cursor:default;"><div class="tt">Sin coincidencias</div></div>'; sug.classList.add('on'); return; }
+  var html='';
+  all.forEach(function(it,idx){
+    html+='<div class="sug" data-idx="'+idx+'" data-type="'+((it.calle||it.bb)?'calle':(it.cat?'cat':(it.mz!==undefined?'mz':'poi')))+'" data-payload="'+esc(JSON.stringify(it).replace(/"/g,'&quot;'))+'">'+it.html+'</div>';
+  });
+  sug.innerHTML=html; sug.classList.add('on');
+  var ss=sug.querySelectorAll('.sug');
+  for(var i=0;i<ss.length;i++){
+    (function(el){
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        var payload=JSON.parse(el.getAttribute('data-payload').replace(/&quot;/g,'"'));
+        handleSug(payload);
+      });
+    })(ss[i]);
+  }
+}
+function handleSug(o){
+  sug.classList.remove('on'); sui.blur(); hideTip();
+  if(o.bb){
+    // calle → encuadrar su bbox y resaltar vía
+    var cx=pX((o.bb[0]+o.bb[2])/2), cy=pY((o.bb[1]+o.bb[3])/2);
+    var wpx=pX(o.bb[2])-pX(o.bb[0]), hpx=pY(o.bb[3])-pY(o.bb[1]);
+    var sc=Math.max(wpx/VW, hpx/VH)*1.35;
+    var ns=clampS(1/(sc||1));
+    animateTo2(cx, cy, Math.max(ns, 1.5));
+    highlightVia(o.name);
+    toast('Plano centrado en '+o.name);
+  } else if(o.cat){ setFilterCat(o.cat); }
+  else if(o.mz!==undefined&&o.mz!==null){ clickMZ(o.mz); }
+  else if(o.poi!==undefined){ clickPOI(o.poi); }
+}
+var hlViaTimer=null;
+function highlightVia(name){
+  clearTimeout(hlViaTimer);
+  var paths=gVias.querySelectorAll('path.via');
+  for(var i=0;i<paths.length;i++){
+    var p=paths[i];
+    var nm=p.getAttribute('data-n').toLowerCase();
+    if(nm && name.toLowerCase().indexOf(nm)>=0 || nm && nm.indexOf(name.toLowerCase())>=0){
+      p.classList.add('viahl');
+    }
+  }
+  hlViaTimer=setTimeout(function(){ gVias.querySelectorAll('path.viahl').forEach(function(p){ p.classList.remove('viahl'); }); }, 3200);
+}
+// buscar con Enter directo
+sui.addEventListener('keypress', function(e){
+  if(e.key==='Enter'){} // ya cubierto en keydown
+});
+
+/* ================= filtro de rubro ================= */
+function setFilterCat(cat){
+  if(state.filterCat===cat){ clearFilter(); return; }
+  state.filterCat=cat;
+  document.getElementById('filterLabel').textContent=cleanCat(cat);
+  document.getElementById('filterChip').classList.add('on');
+  // dim solo en modo single (al acercar)
+  renderPOIs();
+  markRubroRows();
+}
+function clearFilter(){
+  state.filterCat=null;
+  document.getElementById('filterChip').classList.remove('on');
+  renderPOIs();
+  markRubroRows();
+}
+document.getElementById('filterChip').addEventListener('click', function(){ clearFilter(); });
+function markRubroRows(){
+  var rows=document.querySelectorAll('#rubroBars .brow');
+  for(var i=0;i<rows.length;i++){
+    rows[i].classList.toggle('on', rows[i].getAttribute('data-cat')===state.filterCat);
+  }
+}
+
+/* ================= panel ocultable ================= */
+document.getElementById('panelTgl').addEventListener('click', function(){
+  var shell=document.querySelector('.shell');
+  shell.classList.toggle('noPanel');
+  this.textContent = shell.classList.contains('noPanel') ? '▤' : '◫';
+});
+
 /* ================= sidebar ================= */
 function modeRankKey(){ return state.mode==='desa' ? 'poiCount' : 'unsup'; }
 function renderKpis(){
@@ -1004,11 +1357,18 @@ function renderBars(){
   var mx=(arr.length&&arr[0].unsup)||1;
   var html='';
   arr.forEach(function(o){
-    html+='<div class="brow"><div class="lbl"><span class="n">'+esc(cleanCat(o.k))+'</span>'
+    html+='<div class="brow'+(state.filterCat===o.k?' on':'')+'" data-cat="'+esc(o.k)+'"><div class="lbl"><span class="n">'+esc(cleanCat(o.k))+'</span>'
       + '<span class="c">'+o.unsup+' de '+o.tot+' visibles en brecha</span></div>'
       + '<div class="tr"><i style="width:'+(o.unsup/mx*100)+'%"></i></div></div>';
   });
   document.getElementById('rubroBars').innerHTML=html||'<div class="cero">Sin datos</div>';
+  var rows=document.querySelectorAll('#rubroBars .brow');
+  for(var i=0;i<rows.length;i++){
+    (function(el){
+      el.addEventListener('click', function(){ setFilterCat(el.getAttribute('data-cat')); });
+      el.title='Clic para filtrar el mapa por este rubro';
+    })(rows[i]);
+  }
 }
 function renderCand(){
   var cands=[]; DATA.pois.forEach(function(p,k){ if(!p.resp) cands.push({p:p,k:k}); });
@@ -1157,7 +1517,7 @@ document.getElementById('csvModal').addEventListener('click', function(ev){
 /* ================= init ================= */
 buildLayers();
 renderKpis(); renderRank(); renderBars(); renderCand(); renderRec(); renderLegend();
-applyTransform(); updateRadii(); updateScalebar();
+afterViewChange();
 </script>
 </body>
 </html>

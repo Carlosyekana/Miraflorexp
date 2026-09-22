@@ -12,8 +12,9 @@ desarrollo económico a escala de distrito (o de un par de manzanas, en el pilot
 
 ## 📦 El entregable
 
-Abre **`dashboard_miraflores.html`** en cualquier navegador (no necesita internet
-ni servidor: es un único archivo autocontenido con los datos embebidos).
+Abre **`dashboard_miraflores.html`** (o `index.html`) en cualquier navegador — no
+necesita internet ni servidor: es un único archivo autocontenido con los datos
+embebidos. También está publicado en vivo vía **GitHub Pages**.
 
 ### Qué responde (3 modos)
 
@@ -32,12 +33,32 @@ ni servidor: es un único archivo autocontenido con los datos embebidos).
 - **Bandeja de operativo** con checkbox → exporta la **ronda a CSV**.
 - **Slider de tarifa** de saneamiento → recalcula recaudación potencial al instante.
 
+### Mejoras de UI/UX (v3)
+Inspiradas en *GIS and UX/UI Design* (L. Dorsi) y *Map UI Design* (Eleken):
+
+- 🔎 **Buscador** con sugerencias (calle / rubro / manzana / local) → navega
+  y resalta la vía encontrada.
+- 🧭 **Navegación real**: pan + zoom (rueda, doble clic, pellizco), controles
+  +/·−/◎, presets de sector, escala métrica dinámica.
+- 🫧 **Smart zooming / clustering**: alejado, los locales se agrupan en burbujas
+  con contador; al acercar, pasan a puntos individuales (menos ruido visual).
+- 🏷️ **Etiquetas progresivas**: calles locales solo aparecen al acercar.
+- 🔄 **Context retention**: chip "volver a la selección" + anillo de selección
+  persistente; si navegas lejos, siempre puedes regresar.
+- 🎛️ **Vistas enlazadas**: las barras de "brecha por rubro" son clicables y
+  filtran/highlightean el mapa (doble vía mapa ↔ panel).
+- 👆 **Affordances claros**: hover states visibles, "lo clicable se ve clicable"
+  (manzanas, locales, clusters), y *picker* cuando varios locales comparten el
+  mismo punto.
+- ◫ **Modo foco**: oculta el panel lateral y deja el mapa a pantalla completa.
+
 ---
 
 ## 🗂️ Estructura
 
 ```
 Miraflorexp/
+├── index.html                    ← ⭐ GitHub Pages (copia del dashboard)
 ├── dashboard_miraflores.html    ← ⭐ entregable principal (abrir en el navegador)
 ├── mapa_piloto_miraflores.html  ← mapa SVG estático (v1, validación técnica)
 ├── template_dashboard.html      ← plantilla HTML/JS/CSS del tablero
