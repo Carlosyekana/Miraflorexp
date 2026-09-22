@@ -7,6 +7,7 @@
 <style>
   :root{
     --navy:#0b2e4d; --navy2:#14497e; --teal:#0f8a93; --coral:#e2614b; --coral2:#c9482f;
+    --navy-txt:#0b2e4d;             /* texto sobre panel claro */
     --sand:#f6f1e6; --cream:#fdfbf6; --ink:#17222e; --mut:#64748b; --mut2:#8b93a1;
     --line:#e8e4d8; --line2:#efece1;
     --red:#cf4440; --redbg:#fbeae8; --green:#2f8f5b; --greenbg:#e7f4ec;
@@ -22,6 +23,7 @@
   }
   [data-theme="dark"]{
     --sand:#0a111d; --cream:#101a29; --ink:#dbe4ee; --mut:#8fa0b3; --mut2:#5f7086;
+    --navy-txt:#8fb8e8;             /* texto legible sobre panel oscuro */
     --line:#223247; --line2:#1a2736;
     --red:#ef6a64; --redbg:#291519; --green:#3fae74; --greenbg:#0f271c;
     --bluebg2:#12263b; --tealbg2:#0e2a2a;
@@ -43,7 +45,7 @@
     transition:background .25s ease, color .25s ease;
   }
   .mono{font-variant-numeric:tabular-nums;}
-  .chipcat{display:inline-block;background:var(--zbadge);color:var(--navy);border-radius:14px;padding:2px 8px;font-size:10.5px;margin:1px 2px 1px 0;}
+  .chipcat{display:inline-block;background:var(--zbadge);color:var(--navy-txt);border-radius:14px;padding:2px 8px;font-size:10.5px;margin:1px 2px 1px 0;}
   /* mensaje puntual de manzana según modo */
   .callout{display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:12px; margin-bottom:8px;
     border:1px solid var(--line); background:var(--panel2);}
@@ -54,11 +56,11 @@
   .callout.r{border-left:4px solid var(--amber);}
   .callout.d{border-left:4px solid var(--teal);}
 
-  /* ---------- header ---------- */
+  /* ---------- header (negro total) ---------- */
   header{
-    background:linear-gradient(115deg,#0a2a46 0%, #103f66 55%, #0e5c66 100%);
+    background:#000;
     color:#fff; padding:10px 18px; display:flex; align-items:center; gap:14px;
-    flex-shrink:0; position:relative; z-index:60; box-shadow:0 2px 12px rgba(0,0,0,.22);
+    flex-shrink:0; position:relative; z-index:60; box-shadow:0 2px 12px rgba(0,0,0,.45);
   }
   header::after{
     content:""; position:absolute; left:0; bottom:0; height:3px; width:100%;
@@ -104,7 +106,7 @@
     border:1px solid var(--line); border-radius:12px; padding:9px 13px; box-shadow:var(--shadow2);
     pointer-events:none;
   }
-  #sectorChip .t{font-size:13.5px; font-weight:800; color:var(--navy);}
+  #sectorChip .t{font-size:13.5px; font-weight:800; color:var(--navy-txt);}
   #sectorChip .s{font-size:11px; color:var(--mut); margin-top:1px;}
   #sectorChip .s b{color:var(--teal);}
 
@@ -133,7 +135,7 @@
   }
   .pch{
     background:var(--panel); border:1px solid var(--line); border-radius:20px;
-    padding:5px 12px; font-size:11.5px; font-weight:700; color:var(--navy); cursor:pointer;
+    padding:5px 12px; font-size:11.5px; font-weight:700; color:var(--navy-txt); cursor:pointer;
     box-shadow:var(--shadow2); transition:all .12s;
   }
   .pch:hover{background:var(--panel); border-color:#b9c6d4; transform:translateY(-1px);}
@@ -146,7 +148,7 @@
     box-shadow:var(--shadow2); overflow:hidden;
   }
   #zoomCtrl button{
-    width:36px; height:36px; border:none; background:none; font-size:19px; font-weight:700; color:var(--navy);
+    width:36px; height:36px; border:none; background:none; font-size:19px; font-weight:700; color:var(--navy-txt);
     cursor:pointer; line-height:1;
   }
   #zoomCtrl button:hover{background:var(--hover);}
@@ -184,7 +186,7 @@
     border:1px solid var(--line); border-radius:12px; padding:10px 12px; box-shadow:var(--shadow2);
     font-size:11.5px; width:230px;
   }
-  #legend .tl{font-weight:800; color:var(--navy); margin-bottom:5px; font-size:11px; letter-spacing:.5px; text-transform:uppercase;}
+  #legend .tl{font-weight:800; color:var(--navy-txt); margin-bottom:5px; font-size:11px; letter-spacing:.5px; text-transform:uppercase;}
   #legend .row{display:flex; align-items:center; gap:8px; margin:4px 0;}
   #legend .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
   #legend .sq{width:10px;height:10px;border-radius:2px;flex-shrink:0;border:1px solid rgba(0,0,0,.15);}
@@ -333,7 +335,7 @@
   .kpi.hl::before{background:var(--red);}
   .kpi.re::before{background:var(--coral);}
   .kpi.de::before{background:var(--teal);}
-  .kpi .v{font-size:20px; font-weight:800; color:var(--navy); letter-spacing:-.5px;}
+  .kpi .v{font-size:20px; font-weight:800; color:var(--navy-txt); letter-spacing:-.5px;}
   .kpi.hl .v{color:var(--red);}
   .kpi .l{font-size:10px; color:var(--mut); margin-top:3px; line-height:1.3;}
 
@@ -361,7 +363,7 @@
   .recbox.f3{background:var(--tealbg2); border-color:#c4e2e0;}
   .recbox .t{font-size:10px; letter-spacing:.8px; font-weight:800; text-transform:uppercase; color:var(--amber);}
   .recbox.f1 .t{color:var(--red);}
-  .recbox.f2 .t{color:var(--navy);}
+  .recbox.f2 .t{color:var(--navy-txt);}
   .recbox.f3 .t{color:var(--teal);}
   .recbox .b{font-size:12.5px; margin-top:5px; color:var(--ink);}
   .recbox .a{font-size:12.5px; margin-top:6px; color:var(--ink); font-weight:700; padding-left:10px; border-left:3px solid var(--amber);}
@@ -413,14 +415,14 @@
   }
   .cand label:hover{background:var(--hover2);}
   .cand input[type=checkbox]{margin-top:3px; accent-color:var(--red); flex-shrink:0;}
-  .cand .poigo{color:var(--navy); font-weight:700; cursor:pointer;}
+  .cand .poigo{color:var(--navy-txt); font-weight:700; cursor:pointer;}
   .cand .mut3{color:var(--mut); font-size:10.5px;}
   .cand .addr{color:var(--teal); font-weight:700; font-size:10.5px;}
 
   /* tariff */
   .tariff{background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:11px 13px;}
   .tariff .lbl{display:flex; justify-content:space-between; font-size:11.5px; font-weight:800;}
-  .tariff .lbl .amt{color:var(--navy); font-size:13.5px;}
+  .tariff .lbl .amt{color:var(--navy-txt); font-size:13.5px;}
   .tariff input{width:100%; margin-top:9px; accent-color:var(--coral);}
   .tariff .hint{font-size:10px; color:var(--mut); margin-top:6px; line-height:1.35;}
 
@@ -517,8 +519,8 @@
         <button id="zReset" title="Vista general">◎</button>
       </div>
       <svg id="north" viewBox="0 0 30 34">
-        <polygon points="15,3 22,22 15,17 8,22" fill="#0b2e4d"/>
-        <text x="15" y="32" font-size="9" font-weight="800" fill="#0b2e4d" text-anchor="middle" font-family="Arial">N</text>
+        <polygon id="northPoly" points="15,3 22,22 15,17 8,22" fill="#0b2e4d"/>
+        <text id="northTxt" x="15" y="32" font-size="9" font-weight="800" fill="#0b2e4d" text-anchor="middle" font-family="Arial">N</text>
       </svg>
 
       <div id="presets">
@@ -636,6 +638,12 @@ function cleanCat(c){
 function fmt(n){ return (n||0).toLocaleString('es-PE'); }
 function fmtMoney(n){ return 'S/ '+Math.round(n||0).toLocaleString('es-PE'); }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function protUrl(u){
+  u = String(u||'').trim();
+  if(!u) return '';
+  if(/^https?:\/\//i.test(u)) return u;
+  return 'https://'+u;
+}
 function titleCase(s){
   return String(s||'').toLowerCase().replace(/(^|[\s\/(-])(\p{L})/gu, function(_,p,c){ return p+c.toUpperCase(); });
 }
@@ -675,6 +683,11 @@ themeTgl.addEventListener('click', function(){
   themeTgl.textContent = t==='dark' ? '☀️' : '🌙';
   themeTgl.title = t==='dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
 })();
+function syncNorth(){
+  var nc = cssVar('--north');
+  var np=document.getElementById('northPoly'); if(np) np.setAttribute('fill', nc);
+  var nt=document.getElementById('northTxt'); if(nt) nt.setAttribute('fill', nc);
+}
 function repaintMapForTheme(){
   document.getElementById('mapback').setAttribute('fill', cssVar('--mapbg'));
   repaintViasTheme();
@@ -683,6 +696,8 @@ function repaintMapForTheme(){
   repaintNumTheme();
   renderPOIs();
   buildStreetLabels();
+  syncNorth();
+  renderLegend();
 }
 function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 function repaintViasTheme(){
@@ -1331,7 +1346,12 @@ function showCardPOI(p){
     + '<div class="kv"><span>Zonificación del lote</span><span>'+(p.lote_zon? 'Z'+esc(p.lote_zon):'n/d')+'</span></div>'
     + '<div class="kv"><span>Estado</span><span class="'+(p.resp?'green':'red')+'">'+(p.resp?'✔ respaldo formal':'✘ en brecha (sin licencia compatible)')+'</span></div>'
     + (!p.resp? '<div class="kv"><span>Saneamiento estimado</span><span>'+fmtMoney(state.tariff)+'</span></div>':'')
-    + '<div style="margin-top:10px;"><label style="font-size:12px;cursor:pointer;font-weight:700;color:var(--navy);">'
+    + (p.cuisine? '<div class="kv"><span>Tipo de cocina</span><span>'+esc(cleanCat(p.cuisine))+'</span></div>':'')
+    + ((p.brand && p.brand.toLowerCase()!==(p.name||'').toLowerCase())? '<div class="kv"><span>Marca</span><span>'+esc(p.brand)+'</span></div>':'')
+    + (p.phone? '<div class="kv"><span>Teléfono</span><span class="mono"><a href="tel:'+encodeURIComponent(p.phone)+'" style="color:var(--teal);text-decoration:none;">'+esc(p.phone)+'</a></span></div>':'')
+    + (p.website? '<div class="kv"><span>Sitio web</span><span style="font-size:11px;"><a href="'+esc(protUrl(p.website))+'" target="_blank" rel="noopener" style="color:var(--teal);text-decoration:none;word-break:break-all;">'+esc(p.website)+'</a></span></div>':'')
+    + (p.hours? '<div class="kv"><span>Horario</span><span style="font-size:11px;">'+esc(p.hours)+'</span></div>':'')
+    + '<div style="margin-top:10px;"><label style="font-size:12px;cursor:pointer;font-weight:700;color:var(--navy-txt);">'
     + '<input type="checkbox" id="ckSel" '+(ck?'checked':'')+'> agregar a la bandeja de operativo</label></div>';
   document.getElementById('selBody').innerHTML=html;
   var cb=document.getElementById('ckSel');
@@ -1576,11 +1596,12 @@ function renderRec(){
 function renderLegend(){
   var g=document.getElementById('legendGrad');
   var hi=document.getElementById('legendHi'), lo=document.getElementById('legendLo');
+  var base = document.documentElement.getAttribute('data-theme')==='dark' ? 'rgb(16,24,38)' : 'rgb(247,243,233)';
   if(state.mode==='desa'){
-    g.style.background='linear-gradient(90deg, rgb(247,243,233), rgb(15,138,147))';
+    g.style.background='linear-gradient(90deg, '+base+', rgb(15,138,147))';
     lo.textContent='menos locales'; hi.textContent='más locales';
   } else {
-    g.style.background='linear-gradient(90deg, rgb(247,243,233), rgb(207,68,64))';
+    g.style.background='linear-gradient(90deg, '+base+', rgb(207,68,64))';
     lo.textContent='menor brecha'; hi.textContent='mayor brecha';
   }
 }
@@ -1665,6 +1686,7 @@ document.getElementById('csvModal').addEventListener('click', function(ev){
 buildLayers();
 renderKpis(); renderRank(); renderBars(); renderCand(); renderRec(); renderLegend();
 afterViewChange();
+syncNorth();
 </script>
 </body>
 </html>

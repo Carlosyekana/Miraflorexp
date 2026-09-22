@@ -91,6 +91,16 @@ print("licencias en zona de estudio:", len(lic))
 EXCLUDE_AMENITIES = {'parking','bench','waste_basket','toilets','bicycle_parking','fountain','clock','atm'}
 tree = ET.parse(D + "osm_estudio.osm"); root = tree.getroot()
 
+def enrich(t):
+    """Datos extra de OSM que gratis enriquecen la ficha (proxy de 'presencia digital')."""
+    phone = t.get("phone") or t.get("contact:phone") or ""
+    website = t.get("website") or t.get("contact:website") or ""
+    hours = t.get("opening_hours") or ""
+    cuisine = t.get("cuisine") or ""
+    brand = t.get("brand") or ""
+    return {"phone": phone.strip(), "website": website.strip(),
+            "hours": hours.strip(), "cuisine": cuisine.strip(), "brand": brand.strip()}
+
 pois = []
 for nd in root.findall("node"):
     t = {x.attrib["k"]: x.attrib["v"] for x in nd.findall("tag")}
@@ -100,8 +110,10 @@ for nd in root.findall("node"):
     elif "tourism" in t and t["tourism"] in ('hotel','hostel','attraction','museum','gallery','guest_house','apartment'):
         cat = "tourism:" + t["tourism"]
     if cat is None: continue
-    pois.append({"name": t.get("name") or t.get("brand") or "", "cat": cat,
-                 "lon": float(nd.attrib["lon"]), "lat": float(nd.attrib["lat"])})
+    p = {"name": t.get("name") or t.get("brand") or "", "cat": cat,
+         "lon": float(nd.attrib["lon"]), "lat": float(nd.attrib["lat"])}
+    p.update(enrich(t))
+    pois.append(p)
 
 node_locs = {nd.attrib["id"]: (float(nd.attrib["lat"]), float(nd.attrib["lon"])) for nd in root.findall("node")}
 for wy in root.findall("way"):
@@ -115,8 +127,10 @@ for wy in root.findall("way"):
     refs = [r.attrib["ref"] for r in wy.findall("nd")]
     pts = [node_locs[r] for r in refs if r in node_locs]
     if not pts: continue
-    pois.append({"name": t.get("name", ""), "cat": cat,
-                 "lon": sum(p[1] for p in pts)/len(pts), "lat": sum(p[0] for p in pts)/len(pts)})
+    p = {"name": t.get("name", ""), "cat": cat,
+         "lon": sum(p[1] for p in pts)/len(pts), "lat": sum(p[0] for p in pts)/len(pts)}
+    p.update(enrich(t))
+    pois.append(p)
 print("POIs crudos extraídos de OSM:", len(pois))
 
 # recortar a la zona de estudio

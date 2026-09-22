@@ -29,7 +29,8 @@ embebidos. También está publicado en vivo vía **GitHub Pages**.
 - Clic en **manzana** → resalte dorado pulsante + **zoom automático de 4.6×** y
   ficha con **mensaje puntual de esa manzana** según el modo activo.
 - Clic en **local** → ficha individual con **dirección** (`ej. Av. José Larco 765`),
-  **lote catastral** y **zonificación del lote**.
+  **lote catastral**, **zonificación del lote** y, cuando OSM lo trae,
+  **teléfono, sitio web, horario, cocina y marca** (quick-win sin Google).
 - Toggle de **capas** (lotes, numeración de puertas, locales).
 - 🌙 **Modo oscuro / claro** en el encabezado (los colores del mapa, paneles y
   texto se adaptan en vivo).
