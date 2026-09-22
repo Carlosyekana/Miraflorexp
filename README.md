@@ -26,10 +26,13 @@ embebidos. También está publicado en vivo vía **GitHub Pages**.
 
 ### Interacciones
 - 🖱️ **Arrastrar** para mover · **rueda / doble clic / pellizco** para zoom.
-- Clic en **manzana** → ficha (zonificación, lotes, rubros) + zoom.
+- Clic en **manzana** → resalte dorado pulsante + **zoom automático de 4.6×** y
+  ficha con **mensaje puntual de esa manzana** según el modo activo.
 - Clic en **local** → ficha individual con **dirección** (`ej. Av. José Larco 765`),
   **lote catastral** y **zonificación del lote**.
 - Toggle de **capas** (lotes, numeración de puertas, locales).
+- 🌙 **Modo oscuro / claro** en el encabezado (los colores del mapa, paneles y
+  texto se adaptan en vivo).
 - **Bandeja de operativo** con checkbox → exporta la **ronda a CSV**.
 - **Slider de tarifa** de saneamiento → recalcula recaudación potencial al instante.
 
@@ -51,6 +54,20 @@ Inspiradas en *GIS and UX/UI Design* (L. Dorsi) y *Map UI Design* (Eleken):
   (manzanas, locales, clusters), y *picker* cuando varios locales comparten el
   mismo punto.
 - ◫ **Modo foco**: oculta el panel lateral y deja el mapa a pantalla completa.
+
+### Feedback aplicado (v4)
+- 🌙 **Modo oscuro**: toggle en el encabezado; el fondo del mapa, choropleth,
+  vías, lotes, numeración, labels y paneles cambian a una paleta oscura sin
+  recargar.
+- 🎯 **Clic en manzana → resalte fuerte + zoom**: la manzana seleccionada queda
+  con borde dorado pulsante y el mapa se centra y acerca a **4.6×**.
+- 💬 **Mensaje puntual por manzana según el modo**:
+  - **Fiscalización**: prioridad (alta/media/baja), nº de locales sin licencia
+    compatible y el rubro que predomina.
+  - **Tributación**: recaudación potencial de la manzana (brecha × tarifa de
+    saneamiento) y sugerencia de cruce con rentas.
+  - **Desarrollo**: densidad de actividad vs. zonificación para detectar
+    saturación o vacíos.
 
 ---
 
