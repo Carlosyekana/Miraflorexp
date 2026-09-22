@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catastro Comercial · Miraflores</title>
+<style>
+  :root{
+    --navy:#0b2e4d; --navy2:#14497e; --teal:#0f8a93; --coral:#e2614b; --coral2:#c9482f;
+    --sand:#f6f1e6; --cream:#fdfbf6; --ink:#17222e; --mut:#64748b; --mut2:#8b93a1;
+    --line:#e8e4d8; --line2:#efece1;
+    --red:#cf4440; --redbg:#fbeae8; --green:#2f8f5b; --greenbg:#e7f4ec;
+    --blue:#2b6cb0; --amber:#c98a06; --amberbg:#fdf3dd;
+    --shadow:0 10px 30px rgba(11,46,77,.10); --shadow2:0 4px 14px rgba(11,46,77,.14);
+    --rad:14px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--sand); color:var(--ink); display:flex; flex-direction:column;
+    font-size:14px; line-height:1.45; overflow:hidden;
+  }
+  .mono{font-variant-numeric:tabular-nums;}
+
+  /* ---------- header ---------- */
+  header{
+    background:linear-gradient(115deg,#0a2a46 0%, #103f66 55%, #0e5c66 100%);
+    color:#fff; padding:10px 18px; display:flex; align-items:center; gap:14px;
+    flex-shrink:0; position:relative; z-index:60; box-shadow:0 2px 12px rgba(0,0,0,.22);
+  }
+  header::after{
+    content:""; position:absolute; left:0; bottom:0; height:3px; width:100%;
+    background:linear-gradient(90deg,#e2614b 0%, #e2a33f 30%, #0f8a93 70%, #2f8f5b 100%);
+  }
+  .seal{
+    width:40px; height:40px; flex-shrink:0; border-radius:11px; background:rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(2px);
+  }
+  header .group{min-width:0;}
+  header h1{font-size:16.5px; font-weight:800; letter-spacing:.2px; line-height:1.2;}
+  header .sub{font-size:11.5px; color:#bfd5e8; margin-top:2px; letter-spacing:.2px;}
+  .hdr-right{margin-left:auto; display:flex; align-items:center; gap:9px; flex-shrink:0;}
+  .hdr-chip{
+    display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;
+  }
+  .hdr-chip .d{font-size:11px; color:#9fbdd8;}
+  .hdr-chip .z{font-size:13px; font-weight:700; color:#dfeaf4;}
+  .badge{
+    background:rgba(226,97,75,.18); border:1px solid rgba(226,97,75,.55); color:#ffb3a6;
+    padding:4px 10px; border-radius:20px; font-size:10.5px; font-weight:800; letter-spacing:.8px;
+    text-transform:uppercase;
+  }
+
+  /* ---------- shell ---------- */
+  .shell{display:flex; flex:1; min-height:0;}
+
+  /* ---------- map ---------- */
+  .mapcol{flex:1; min-width:0; position:relative; background:var(--cream);}
+  #mapwrap{position:absolute; inset:0; overflow:hidden;}
+  #map{
+    position:absolute; inset:0; width:100%; height:100%;
+    touch-action:none; /* pan/zoom propio */
+    cursor:grab; background:#fbf8f1;
+  }
+  #map.dragging{cursor:grabbing;}
+  #map text{pointer-events:none; user-select:none;}
+
+  /* floating top-left panel: título del sector */
+  #sectorChip{
+    position:absolute; left:14px; top:14px; z-index:30; background:rgba(255,255,255,.96);
+    border:1px solid var(--line); border-radius:12px; padding:9px 13px; box-shadow:var(--shadow2);
+    pointer-events:none;
+  }
+  #sectorChip .t{font-size:13.5px; font-weight:800; color:var(--navy);}
+  #sectorChip .s{font-size:11px; color:var(--mut); margin-top:1px;}
+  #sectorChip .s b{color:var(--teal);}
+
+  /* floating layers panel (top-left under sector) */
+  #layerPanel{
+    position:absolute; left:14px; top:86px; z-index:30; background:rgba(255,255,255,.97);
+    border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow2); padding:8px 6px;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .lchp{
+    display:flex; align-items:center; gap:8px; padding:5px 9px; border-radius:8px; cursor:pointer;
+    font-size:11.5px; font-weight:700; color:var(--mut); user-select:none;
+  }
+  .lchp:hover{background:#f3f0e7;}
+  .lchp .sw{width:16px;height:16px;border-radius:5px;border:1.5px solid var(--line);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;transition:all .14s;}
+  .lchp.on{color:var(--ink);}
+  .lchp.on .sw{background:var(--navy); border-color:var(--navy);}
+  .lchp.on .sw::after{content:"✓"; color:#fff; font-size:10px; font-weight:900;}
+  .lchp .px{margin-left:2px; width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+  /* preset zoom chips */
+  #presets{
+    position:absolute; left:14px; bottom:14px; z-index:30; display:flex; gap:6px; flex-wrap:wrap;
+    max-width:340px;
+  }
+  .pch{
+    background:rgba(255,255,255,.97); border:1px solid var(--line); border-radius:20px;
+    padding:5px 12px; font-size:11.5px; font-weight:700; color:var(--navy); cursor:pointer;
+    box-shadow:var(--shadow2); transition:all .12s;
+  }
+  .pch:hover{background:#fff; border-color:#b9c6d4; transform:translateY(-1px);}
+  .pch.on{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+  /* zoom controls + north + scale */
+  #zoomCtrl{
+    position:absolute; right:14px; top:14px; z-index:30; display:flex; flex-direction:column;
+    background:rgba(255,255,255,.97); border:1px solid var(--line); border-radius:12px;
+    box-shadow:var(--shadow2); overflow:hidden;
+  }
+  #zoomCtrl button{
+    width:36px; height:36px; border:none; background:none; font-size:19px; font-weight:700; color:var(--navy);
+    cursor:pointer; line-height:1;
+  }
+  #zoomCtrl button:hover{background:#f0ede2;}
+  #zoomCtrl button+button{border-top:1px solid var(--line);}
+  #north{
+    position:absolute; right:20px; top:130px; z-index:30; width:30px; height:34px; opacity:.85;
+    pointer-events:none;
+  }
+  #scalebar{
+    position:absolute; right:14px; bottom:14px; z-index:30; background:rgba(255,255,255,.92);
+    border:1px solid var(--line); border-radius:8px; padding:6px 9px; font-size:10.5px; color:var(--mut);
+    box-shadow:var(--shadow2);
+  }
+  #scalebar .bar{height:6px; border-left:1.5px solid var(--ink); border-right:1.5px solid var(--ink);
+    border-bottom:1.5px solid var(--ink); margin-top:3px;}
+  #scalebar .lbl{margin-top:3px; text-align:center;}
+  #readout{
+    position:absolute; left:0; bottom:0; z-index:25; background:rgba(11,46,77,.82); color:#cfe2f2;
+    padding:4px 10px; font-size:10.5px; border-radius:0 8px 0 0; font-family:ui-monospace,Menlo,monospace;
+  }
+
+  /* tooltip */
+  #tooltip{
+    position:absolute; pointer-events:none; background:rgba(11,46,77,.97); color:#fff;
+    padding:8px 11px; border-radius:9px; font-size:12px; box-shadow:0 6px 18px rgba(0,0,0,.32);
+    max-width:300px; display:none; z-index:50; line-height:1.45;
+  }
+  #tooltip b{color:#ffd479;}
+  #tooltip .ok{color:#8be3a8;} #tooltip .bad{color:#ff9d97;}
+  #tooltip .mut2{color:#a9bdd2; font-size:10.5px;}
+
+  /* legend floating */
+  #legend{
+    position:absolute; right:14px; bottom:64px; z-index:30; background:rgba(255,255,255,.97);
+    border:1px solid var(--line); border-radius:12px; padding:10px 12px; box-shadow:var(--shadow2);
+    font-size:11.5px; width:230px;
+  }
+  #legend .tl{font-weight:800; color:var(--navy); margin-bottom:5px; font-size:11px; letter-spacing:.5px; text-transform:uppercase;}
+  #legend .row{display:flex; align-items:center; gap:8px; margin:4px 0;}
+  #legend .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  #legend .sq{width:10px;height:10px;border-radius:2px;flex-shrink:0;border:1px solid rgba(0,0,0,.15);}
+  #legend .grad{height:8px;border-radius:4px;margin:6px 0 2px;}
+  #legend .gmin{display:flex;justify-content:space-between;font-size:10px;color:var(--mut);}
+
+  /* selection card (modal over map) */
+  #selcard{
+    position:absolute; left:14px; top:14px; width:312px; background:#fff; border-radius:16px;
+    box-shadow:var(--shadow); z-index:40; overflow:hidden; display:none; animation:pop .18s ease;
+    max-height:calc(100% - 28px); display:none; flex-direction:column;
+  }
+  @keyframes pop{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+  #selcard.on{display:flex;}
+  #selcard .hd{
+    background:linear-gradient(115deg,var(--navy),var(--navy2)); color:#fff; padding:11px 14px;
+    display:flex; justify-content:space-between; align-items:center; flex-shrink:0;
+  }
+  #selcard .hd .t{font-weight:800; font-size:13.5px;}
+  #selcard .hd .tags{display:flex; gap:5px;}
+  #selcard .hd .chip{background:rgba(255,255,255,.16); padding:2px 7px; border-radius:12px; font-size:10px; font-weight:700;}
+  #selcard .hd button{background:none;border:none;color:#cfe2f2;font-size:18px;cursor:pointer;line-height:1;}
+  #selcard .bd{padding:12px 14px; overflow:auto; font-size:12.5px;}
+  #selcard .kv{display:flex; justify-content:space-between; gap:10px; padding:3.5px 0; border-bottom:1px dashed var(--line2);}
+  #selcard .kv:last-of-type{border-bottom:none;}
+  #selcard .kv span:first-child{color:var(--mut);}
+  #selcard .kv span:last-child{font-weight:700; text-align:right;}
+  #selcard .kv .red{color:var(--red);}
+  #selcard .kv .green{color:var(--green);}
+  #selcard .sec{margin-top:9px; font-size:10.5px; letter-spacing:.6px; color:var(--mut); font-weight:800; text-transform:uppercase;}
+  #selcard .item{
+    display:flex; align-items:flex-start; gap:8px; padding:7px 5px; border-top:1px solid var(--line2);
+    cursor:pointer; border-radius:8px;
+  }
+  #selcard .item:hover{background:#f6f8fb;}
+  #selcard .item .c{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+  #selcard .item .nm{font-weight:700; font-size:12px;}
+  #selcard .item .ct{color:var(--mut); font-size:11px;}
+
+  /* ---------- sidebar ---------- */
+  aside{
+    width:384px; background:#fff; border-left:1px solid var(--line); overflow:auto; flex-shrink:0;
+    display:flex; flex-direction:column; gap:14px; padding:16px 16px 20px; box-shadow:-4px 0 20px rgba(11,46,77,.05);
+  }
+  .kpis{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px;}
+  .kpi{
+    border:1px solid var(--line); border-radius:12px; padding:10px 8px; text-align:center;
+    background:var(--cream); position:relative; overflow:hidden;
+  }
+  .kpi::before{content:""; position:absolute; left:0; top:0; height:3px; width:100%;
+    background:var(--navy);}
+  .kpi.hl::before{background:var(--red);}
+  .kpi.re::before{background:var(--coral);}
+  .kpi.de::before{background:var(--teal);}
+  .kpi .v{font-size:20px; font-weight:800; color:var(--navy); letter-spacing:-.5px;}
+  .kpi.hl .v{color:var(--red);}
+  .kpi .l{font-size:10px; color:var(--mut); margin-top:3px; line-height:1.3;}
+
+  /* mode selector */
+  .focus{display:flex; gap:6px;}
+  .focus button{
+    flex:1; padding:9px 4px 8px; border-radius:12px; border:1px solid var(--line); background:var(--cream);
+    cursor:pointer; text-align:center; transition:all .14s;
+  }
+  .focus button .ic{font-size:16px;}
+  .focus button .l1{font-size:11px; font-weight:800; color:var(--mut); margin-top:3px;}
+  .focus button .l2{font-size:9px; color:var(--mut2); margin-top:1px; line-height:1.25;}
+  .focus button:hover:not(.on){border-color:#c6cfda; transform:translateY(-1px);}
+  .focus button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .focus button.on .l1{color:#fff;}
+  .focus button.on .l2{color:#bfd5e8;}
+  .focus.f1 button.on{background:var(--coral2); border-color:var(--coral2);}
+  .focus.f2 button.on{background:var(--navy); border-color:var(--navy);}
+  .focus.f3 button.on{background:var(--teal); border-color:var(--teal);}
+
+  /* recommendation */
+  .recbox{border-radius:12px; padding:12px 14px; background:var(--amberbg); border:1px solid #f0d9a0;}
+  .recbox.f1{background:var(--redbg); border-color:#f2c6c1;}
+  .recbox.f2{background:#eef3f9; border-color:#cfe0ef;}
+  .recbox.f3{background:#e6f3f2; border-color:#c4e2e0;}
+  .recbox .t{font-size:10px; letter-spacing:.8px; font-weight:800; text-transform:uppercase; color:var(--amber);}
+  .recbox.f1 .t{color:var(--red);}
+  .recbox.f2 .t{color:var(--navy);}
+  .recbox.f3 .t{color:var(--teal);}
+  .recbox .b{font-size:12.5px; margin-top:5px; color:var(--ink);}
+  .recbox .a{font-size:12.5px; margin-top:6px; color:var(--ink); font-weight:700; padding-left:10px; border-left:3px solid var(--amber);}
+  .recbox.f1 .a{border-color:var(--red);}
+  .recbox.f2 .a{border-color:var(--navy);}
+  .recbox.f3 .a{border-color:var(--teal);}
+
+  .sectitle{
+    font-size:10.5px; letter-spacing:.7px; text-transform:uppercase; color:var(--mut);
+    font-weight:800; display:flex; justify-content:space-between; align-items:center;
+  }
+  .sectitle .more{font-size:10px; color:var(--mut2); text-transform:none; letter-spacing:0; font-weight:600;}
+
+  /* ranking */
+  .rank .row{
+    display:flex; align-items:center; gap:10px; padding:8px 9px; border:1px solid var(--line);
+    border-radius:11px; margin-top:7px; cursor:pointer; transition:all .12s; background:#fff;
+  }
+  .rank .row:hover{background:#f7f5ee; border-color:#c9d2db; transform:translateX(2px);}
+  .rank .idx{width:24px;height:24px;border-radius:8px;background:var(--navy);color:#fff;
+    font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .rank.f1 .idx{background:var(--coral2);}
+  .rank.f2 .idx{background:var(--navy);}
+  .rank.f3 .idx{background:var(--teal);}
+  .rank .row .main{flex:1; min-width:0;}
+  .rank .row .main .mz{font-weight:800; font-size:12.5px; display:flex; align-items:center; gap:6px;}
+  .rank .row .main .zbadge{background:#eef1f5; color:var(--mut); font-size:9.5px; font-weight:700;
+    padding:1px 6px; border-radius:10px;}
+  .rank .row .main .d{font-size:10.8px; color:var(--mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px;}
+  .rank .row .num{font-weight:800; font-size:16px; color:var(--red);}
+  .rank .row .num.blue{color:var(--teal);}
+  .rank .row .bar{height:4px; background:var(--red); border-radius:3px; margin-top:4px;}
+  .rank .row .bar.blue{background:var(--teal);}
+
+  /* rubros */
+  .bars .brow{margin-top:7px;}
+  .bars .brow .lbl{display:flex; justify-content:space-between; font-size:11.5px;}
+  .bars .brow .lbl .n{font-weight:700;}
+  .bars .brow .lbl .c{color:var(--mut); font-size:10.5px;}
+  .bars .brow .tr{height:7px; background:#efece1; border-radius:4px; margin-top:3px; overflow:hidden;}
+  .bars .brow .tr i{display:block; height:100%; background:var(--red); border-radius:4px;}
+
+  /* candidates */
+  .cand{max-height:236px; overflow:auto; border:1px solid var(--line); border-radius:11px; padding:3px; background:var(--cream);}
+  .cand .cero{padding:14px; color:var(--mut); font-size:12px; text-align:center;}
+  .cand label{
+    display:flex; gap:8px; align-items:flex-start; padding:7px 8px; cursor:pointer; font-size:11.5px;
+    border-bottom:1px solid var(--line2); background:#fff; border-radius:8px; margin:2px;
+  }
+  .cand label:hover{background:#f6f8fb;}
+  .cand input[type=checkbox]{margin-top:3px; accent-color:var(--red); flex-shrink:0;}
+  .cand .poigo{color:var(--navy); font-weight:700; cursor:pointer;}
+  .cand .mut3{color:var(--mut); font-size:10.5px;}
+  .cand .addr{color:var(--teal); font-weight:700; font-size:10.5px;}
+
+  /* tariff */
+  .tariff{background:var(--cream); border:1px solid var(--line); border-radius:12px; padding:11px 13px;}
+  .tariff .lbl{display:flex; justify-content:space-between; font-size:11.5px; font-weight:800;}
+  .tariff .lbl .amt{color:var(--navy); font-size:13.5px;}
+  .tariff input{width:100%; margin-top:9px; accent-color:var(--coral);}
+  .tariff .hint{font-size:10px; color:var(--mut); margin-top:6px; line-height:1.35;}
+
+  .export{
+    background:var(--green); color:#fff; border:none; border-radius:12px; padding:12px;
+    font-weight:800; font-size:13px; cursor:pointer; width:100%; box-shadow:0 4px 12px rgba(47,143,91,.3);
+    transition:all .13s;
+  }
+  .export:hover{background:#277f4f;}
+  .export:disabled{background:#9fb3a6; box-shadow:none;}
+
+  /* toast + modal */
+  #toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:rgba(11,46,77,.97);
+    color:#fff; padding:10px 18px; border-radius:10px; font-size:12.5px; z-index:200; display:none;
+    box-shadow:0 6px 20px rgba(0,0,0,.35); max-width:84%;
+  }
+  #csvModal{
+    position:fixed; inset:0; background:rgba(10,30,48,.55); display:none; align-items:center; justify-content:center; z-index:190;
+  }
+  #csvModal.on{display:flex;}
+  #csvModal .box{
+    background:#fff; border-radius:14px; width:min(560px,92%); max-height:76vh; display:flex; flex-direction:column;
+    box-shadow:0 16px 50px rgba(0,0,0,.4); overflow:hidden;
+  }
+  #csvModal .box .hd{background:var(--navy); color:#fff; padding:11px 15px; font-weight:800; font-size:13px; display:flex; justify-content:space-between;}
+  #csvModal .box .hd button{background:none;border:none;color:#cfe2f2;font-size:17px;cursor:pointer;}
+  #csvModal textarea{flex:1; border:none; padding:13px; font-family:ui-monospace,Menlo,monospace; font-size:11px; resize:none; color:var(--ink); background:var(--cream);}
+  #csvModal .ftr{padding:11px 15px; border-top:1px solid var(--line); display:flex; gap:8px; justify-content:flex-end;}
+  #csvModal .btn{background:var(--navy); color:#fff; border:none; border-radius:9px; padding:9px 15px; font-weight:700; cursor:pointer; font-size:12px;}
+  #csvModal .btn:hover{background:var(--navy2);}
+
+  footer{
+    background:#fff; border-top:1px solid var(--line); padding:7px 16px; font-size:10.5px; color:var(--mut);
+    display:flex; justify-content:space-between; flex-shrink:0; letter-spacing:.1px;
+  }
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#cfc9b9;border-radius:6px;}
+  ::-webkit-scrollbar-thumb:hover{background:#b9b3a1;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="seal">
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <circle cx="13" cy="13" r="12.2" stroke="#7fd0d8" stroke-width="1.4"/>
+      <path d="M3.5 14.4c2.1-2.3 4.2-2.3 6.4 0s4.3 2.3 6.4 0 4.3-2.3 6.4 0" stroke="#ffd479" stroke-width="1.6" stroke-linecap="round"/>
+      <path d="M6.4 18.6c1.7-1.8 3.3-1.8 5 0s3.3 1.8 5 0 3.3-1.8 5 0" stroke="#7fd0d8" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="13" cy="7.6" r="2.1" fill="#e2614b"/>
+    </svg>
+  </div>
+  <div class="group">
+    <h1>Catastro Comercial · Miraflores</h1>
+    <div class="sub">Licencias de funcionamiento × presencia digital × catastro · Sector Kennedy – Larco – La Mar</div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-chip"><span class="d">Zona de estudio</span><span class="z mono" id="zHdr">— ha</span></div>
+    <div class="hdr-chip"><span class="d">Manzanas / Lotes</span><span class="z mono" id="mHdr">—</span></div>
+    <div class="badge">Piloto demostrativo</div>
+  </div>
+</header>
+
+<div class="shell">
+  <!-- ============ MAPA ============ -->
+  <div class="mapcol">
+    <div id="mapwrap">
+      <svg id="map" viewBox="0 0 940 700" xmlns="http://www.w3.org/2000/svg">
+        <rect id="mapback" x="-4000" y="-4000" width="9000" height="9000" fill="#fbf8f1"/>
+        <g id="scene"></g>
+      </svg>
+      <div id="tooltip"></div>
+
+      <div id="sectorChip">
+        <div class="t">Sector Kennedy · eje comercial</div>
+        <div class="s"><b>158 ha</b> · manzanas 172 · lotes 2 097 · puertas 6 752</div>
+      </div>
+
+      <div id="layerPanel">
+        <div class="lchp on" data-layer="lotes"><span class="sw"></span><span class="px" style="background:#e6dfcd;border:1px solid #cfc6ad;"></span> Lotes catastrales</div>
+        <div class="lchp" data-layer="numeracion"><span class="sw"></span><span class="px" style="background:#8a8372;"></span> Numeración de puertas</div>
+        <div class="lchp on" data-layer="pois"><span class="sw"></span><span class="px" style="background:#cf4440;border-radius:50%;"></span> Locales activos</div>
+      </div>
+
+      <div id="zoomCtrl">
+        <button id="zIn" title="Acercar">+</button>
+        <button id="zOut" title="Alejar">−</button>
+        <button id="zReset" title="Vista general">◎</button>
+      </div>
+      <svg id="north" viewBox="0 0 30 34">
+        <polygon points="15,3 22,22 15,17 8,22" fill="#0b2e4d"/>
+        <text x="15" y="32" font-size="9" font-weight="800" fill="#0b2e4d" text-anchor="middle" font-family="Arial">N</text>
+      </svg>
+
+      <div id="presets">
+        <button class="pch" data-preset="all">Vista general</button>
+        <button class="pch" data-preset="kennedy">Parque Kennedy</button>
+        <button class="pch" data-preset="larco">Av. Larco</button>
+        <button class="pch" data-preset="lamar">La Mar</button>
+      </div>
+
+      <div id="readout">lat — · lon — · zoom ×1.0</div>
+      <div id="scalebar"><div class="bar" id="scalebarBar"></div><div class="lbl" id="scalebarLbl">100 m</div></div>
+
+      <div id="legend">
+        <div class="tl">Lectura del mapa</div>
+        <div class="grad" id="legendGrad"></div>
+        <div class="gmin"><span id="legendLo">menor prioridad</span><span id="legendHi">mayor</span></div>
+        <div class="row"><span class="dot" style="background:#2f8f5b;"></span> Local con respaldo formal</div>
+        <div class="row"><span class="dot" style="background:#cf4440;"></span> Local sin licencia compatible</div>
+        <div class="row"><span class="sq" style="background:#e6dfcd;border-color:#cfc6ad;"></span> Lote catastral (clic = código)</div>
+        <div class="row"><span class="dot" style="background:#8a8372;width:6px;height:6px;"></span> Puerta numerada (dirección)</div>
+        <div style="font-size:10px;color:var(--mut);margin-top:5px;line-height:1.4;">Arrastra para mover · rueda, doble clic o pellizco para zoom · clic en manzana = ficha.</div>
+      </div>
+
+      <div id="selcard">
+        <div class="hd">
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;">
+            <span class="t" id="selTitle">Ficha</span>
+            <span class="tags" id="selTags"></span>
+          </div>
+          <button id="selClose">×</button>
+        </div>
+        <div class="bd" id="selBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside>
+    <div class="kpis">
+      <div class="kpi de"><div class="v mono" id="k1v">—</div><div class="l" id="k1l">manzanas</div></div>
+      <div class="kpi hl"><div class="v mono" id="k2v">—</div><div class="l" id="k2l">en brecha</div></div>
+      <div class="kpi re"><div class="v mono" id="k3v">—</div><div class="l" id="k3l">recaudación potencial</div></div>
+    </div>
+
+    <div class="focus f1" id="focusSel">
+      <button data-mode="fisc" class="on"><div class="ic">🎯</div><div class="l1">Fiscalización</div><div class="l2">¿Dónde operar?</div></button>
+      <button data-mode="rentas"><div class="ic">💰</div><div class="l1">Tributación</div><div class="l2">¿Cuánto se pierde?</div></button>
+      <button data-mode="desa"><div class="ic">🏙️</div><div class="l1">Desarrollo</div><div class="l2">¿Dónde hay vacíos?</div></button>
+    </div>
+
+    <div class="recbox f1" id="recbox">
+      <div class="t" id="recT">Radar de decisión</div>
+      <div class="b" id="recText">—</div>
+      <div class="a" id="recAct">—</div>
+    </div>
+
+    <div>
+      <div class="sectitle"><span>Prioridad territorial</span><span class="more">clic = acercar</span></div>
+      <div class="rank f1" id="rankList"></div>
+    </div>
+
+    <div>
+      <div class="sectitle"><span>Brecha por rubro visible</span></div>
+      <div class="bars" id="rubroBars"></div>
+    </div>
+
+    <div>
+      <div class="sectitle"><span>Bandeja de operativo</span><span class="more" id="candCount"></span></div>
+      <div class="cand" id="candList"></div>
+    </div>
+
+    <div class="tariff">
+      <div class="lbl"><span>Saneamiento supuesto por local</span><span class="amt mono" id="tariffAmt">S/ 3 240</span></div>
+      <input type="range" id="tariff" min="300" max="20000" step="100" value="3240">
+      <div class="hint">Multa + licencia + arbitrios retroactivos estimados. Ajusta el slider y todo el tablero se recalcula.</div>
+    </div>
+
+    <button class="export" id="exportBtn">⬇ Exportar ronda a CSV</button>
+  </aside>
+</div>
+
+<div id="toast"></div>
+<div id="csvModal">
+  <div class="box">
+    <div class="hd"><span>Exportar ronda · CSV</span><button id="csvClose">×</button></div>
+    <textarea id="csvArea" readonly spellcheck="false"></textarea>
+    <div class="ftr">
+      <button class="btn" id="csvDownload">Descargar .csv</button>
+      <button class="btn" id="csvCopy">Copiar al portapapeles</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Fuentes: MD Miraflores (licencias datosabiertos.gob.pe · catastro GeoServer WFS: lotes, manzanas, vías, numeración) · presencia digital OpenStreetMap (proxy).</span>
+  <span>Piloto · métricas indicativas, no vinculantes · sep 2026</span>
+</footer>
+
+<script>
+"use strict";
+var DATA = __DATA_JSON__;
+
+/* ================= geometría ================= */
+var b = DATA.bounds;            // [xmin,ymin,xmax,ymax]
+var VW = 940, VH = 700;
+var centerX = VW/2, centerY = VH/2;
+function pX(lon){ return (lon-b[0])/(b[2]-b[0])*VW; }
+function pY(lat){ return (b[3]-lat)/(b[3]-b[1])*VH; }
+function cleanCat(c){
+  var s = String(c||'').replace(/^(shop|tourism):/,'').replace(/_/g,' ');
+  return s.replace(/\b\w/g,function(ch){return ch.toUpperCase();});
+}
+function fmt(n){ return (n||0).toLocaleString('es-PE'); }
+function fmtMoney(n){ return 'S/ '+Math.round(n||0).toLocaleString('es-PE'); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* colores */
+function hex(c){ return 'rgb('+c[0]+','+c[1]+','+c[2]+')'; }
+function lerp(a,bc,t){ return [Math.round(a[0]+(bc[0]-a[0])*t),Math.round(a[1]+(bc[1]-a[1])*t),Math.round(a[2]+(bc[2]-a[2])*t)]; }
+var BASE=[247,243,233];
+var RED=[207,68,64], TEAL=[15,138,147], NAVY=[11,46,77];
+
+/* ================= estado ================= */
+var svg = document.getElementById('map');
+var scene = document.getElementById('scene');
+var state = {
+  mode:'fisc', selMZ:null, selPOI:null, checked:{}, tariff:3240,
+  s:1, tx:0, ty:0,             // scene transform: translate(tx,ty) scale(s)
+  layers:{lotes:true, numeracion:false, pois:true}
+};
+
+/* ================= agregados ================= */
+DATA.manzanas.forEach(function(m){ m.poiCount=0; m.unsup=0; m.cats={}; });
+DATA.pois.forEach(function(p){
+  if(p.mz>=0 && DATA.manzanas[p.mz]){
+    var m=DATA.manzanas[p.mz];
+    m.poiCount++; if(!p.resp) m.unsup++;
+    m.cats[p.cat]=(m.cats[p.cat]||0)+1;
+  }
+});
+var catAgg={};
+DATA.pois.forEach(function(p){
+  var k=p.cat; catAgg[k]=catAgg[k]||{tot:0,unsup:0};
+  catAgg[k].tot++; if(!p.resp) catAgg[k].unsup++;
+});
+var totalUnsup = DATA.pois.reduce(function(a,p){return a+(p.resp?0:1);},0);
+var totalPoi = DATA.pois.length;
+
+function mzValue(m){ return state.mode==='desa' ? m.poiCount : m.unsup; }
+function maxMZ(){ var mx=1; DATA.manzanas.forEach(function(m){ var v=mzValue(m); if(v>mx) mx=v; }); return mx; }
+
+/* cuantizar distancias para tooltip de manzana */
+function fmtHa(m2){ return (m2/10000).toFixed(1); }
+
+/* ================= construir capas ================= */
+var gLotes=null, gMz=null, gVias=null, gPois=null, gNum=null, gLabels=null;
+function manzPath(m){
+  var s='';
+  for(var i=0;i<m.pts.length;i++){ s+=(i===0?'M':'L')+pX(m.pts[i][0]).toFixed(1)+' '+pY(m.pts[i][1]).toFixed(1)+' '; }
+  return s+'Z';
+}
+function buildLayers(){
+  var ns = ' vector-effect="non-scaling-stroke"';
+
+  // vías
+  var v='';
+  DATA.vias.forEach(function(vl){
+    var s='';
+    for(var i=0;i<vl.pts.length;i++){ s+=(i===0?'M':'L')+pX(vl.pts[i][0]).toFixed(1)+' '+pY(vl.pts[i][1]).toFixed(1)+' '; }
+    v+='<path d="'+s+'" fill="none" stroke="#d3cdbd" stroke-width="'+(vl.w||1.2)+'" stroke-linecap="round"'+ns+'/>';
+  });
+  gVias = creator('g'); gVias.innerHTML = v;
+
+  // manzanas (choropleth)
+  gMz = creator('g'); renderMzFills();
+
+  // lotes
+  var l='';
+  DATA.lotes.forEach(function(lo){
+    var s='';
+    for(var i=0;i<lo.pts.length;i++){ s+=(i===0?'M':'L')+pX(lo.pts[i][0]).toFixed(1)+' '+pY(lo.pts[i][1]).toFixed(1)+' '; }
+    l+='<path class="lote" data-cc="'+esc(lo.cc)+'" data-zv="'+esc(lo.zv||'')+'" data-tipo="'+esc(lo.tipo||'')+'" d="'+s+'Z" fill="#e9e2cf" fill-opacity="0.55" stroke="#d8d0bc" stroke-width="0.5"'+ns+'/>';
+  });
+  gLotes = creator('g'); gLotes.innerHTML = l;
+
+  // numeración
+  var n='';
+  DATA.numeracion.forEach(function(no){
+    n+='<circle class="numdot" cx="'+pX(no.lon).toFixed(1)+'" cy="'+pY(no.lat).toFixed(1)+'" r="1.15" fill="#8a8372" fill-opacity="0.5"/>';
+  });
+  gNum = creator('g'); gNum.innerHTML = n; gNum.style.display='none';
+
+  // POIs
+  var pp='';
+  DATA.pois.forEach(function(p,i){
+    var col = p.resp ? '#2f8f5b' : '#cf4440';
+    var r = p.resp ? 2.55 : 2.95;
+    pp += '<circle class="poi" data-i="'+i+'" data-r="'+r+'" cx="'+pX(p.lon).toFixed(1)+'" cy="'+pY(p.lat).toFixed(1)
+        + '" r="'+r+'" fill="'+col+'" fill-opacity="0.88" stroke="#fff" stroke-width="0.6"'+ns+'/>';
+  });
+  gPois = creator('g'); gPois.innerHTML = pp;
+
+  // labels
+  var ll='';
+  DATA.labels.forEach(function(lb){
+    ll += '<text x="'+pX(lb.lon).toFixed(1)+'" y="'+pY(lb.lat).toFixed(1)+'" font-size="9.5" fill="#8a8372" '
+       + 'font-family="Arial" font-weight="700" transform="rotate('+lb.ang+' '+pX(lb.lon).toFixed(1)+' '+pY(lb.lat).toFixed(1)+')">'+esc(lb.t)+'</text>';
+  });
+  gLabels = creator('g'); gLabels.innerHTML = ll;
+
+  scene.appendChild(gVias); scene.appendChild(gLotes); scene.appendChild(gMz);
+  scene.appendChild(gNum); scene.appendChild(gPois); scene.appendChild(gLabels);
+
+  applyLayers(); bindStatic();
+}
+function creator(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+function renderMzFills(){
+  var mmax = maxMZ(); var s='';
+  DATA.manzanas.forEach(function(m){
+    var v=mzValue(m); var t=v? Math.min(1, v/mmax) : 0;
+    var col = state.mode==='desa' ? lerp(BASE,TEAL,t) : lerp(BASE,RED,t);
+    var op = v? 0.5+0.5*t : 0.42;
+    s += '<path class="mz" data-i="'+m.i+'" d="'+manzPath(m)+'" fill="'+hex(col)+'" fill-opacity="'+op.toFixed(2)
+       + '" stroke="'+(state.selMZ===m.i?'#0a1d33':'#c9c2ae')+'" stroke-width="'+(state.selMZ===m.i?2.0:0.6)+'" vector-effect="non-scaling-stroke"></path>';
+  });
+  if(gMz) gMz.innerHTML = s;
+  if(gMz && state.selMZ!==null){ bindMZ(); }
+}
+
+function applyLayers(){
+  gLotes.style.display = state.layers.lotes ? '' : 'none';
+  gNum.style.display = state.layers.numeracion ? '' : 'none';
+  gPois.style.display = state.layers.pois ? '' : 'none';
+}
+
+/* ================= interacción: pan / zoom ================= */
+var PT = { dragging:false, moved:false, sx:0, sy:0, stx:0, sty:0, down:false, downVx:0, downVy:0 };
+function toView(pc){   // clientX/Y -> viewBox coord (via getScreenCTM)
+  var pt = svg.createSVGPoint();
+  pt.x = pc.x; pt.y = pc.y;
+  var ctm = svg.getScreenCTM();
+  if(!ctm) return {x:pc.x,y:pc.y};
+  return pt.matrixTransform(ctm.inverse());
+}
+function clampS(s){ return Math.max(0.6, Math.min(9, s)); }
+function zoomAt(vx, vy, factor){
+  var ns = clampS(state.s*factor);
+  var k = ns/state.s;
+  // mantener el punto (vx,vy) fijo
+  state.tx = vx - (vx - state.tx)*k;
+  state.ty = vy - (vy - state.ty)*k;
+  state.s = ns;
+  applyTransform(); updateRadii(); updateScalebar();
+}
+function applyTransform(){
+  scene.setAttribute('transform','translate('+state.tx+' '+state.ty+') scale('+state.s+')');
+  document.getElementById('readout').textContent =
+    'zoom ×'+state.s.toFixed(1)+' · '+Math.round(state.tx)+', '+Math.round(state.ty);
+}
+function updateRadii(){
+  var s=state.s, i, el;
+  var pois=gPois.querySelectorAll('circle.poi');
+  for(i=0;i<pois.length;i++){ el=pois[i]; el.setAttribute('r', (+el.getAttribute('data-r')/s).toFixed(2)); }
+  var nd=gNum.querySelectorAll('circle.numdot');
+  for(i=0;i<nd.length;i++){ el=nd[i]; el.setAttribute('r', (1.15/s).toFixed(2)); }
+}
+function updateScalebar(){
+  var s=state.s;
+  var latRef = -12.121;
+  var mpp = 111320*Math.cos(latRef*Math.PI/180) * ((b[2]-b[0])/VW); // metros por unidad viewBox
+  var metersPerScreen = mpp / s; // metros por px de pantalla (1 viewBox = 1 css px)
+  var wants=[25,50,100,200,500,1000,2000];
+  var m = wants[0];
+  for(var i=0;i<wants.length;i++){ if(metersPerScreen*wants[i] >= 40){ m=wants[i]; break; } }
+  var px = m / metersPerScreen;
+  px = Math.min(px, 260);
+  document.getElementById('scalebarBar').style.width = px+'px';
+  document.getElementById('scalebarLbl').textContent = m+' m';
+}
+
+/* pan */
+svg.addEventListener('pointerdown', function(e){
+  if(e.button!==0 && e.pointerType==='mouse') return;
+  var v = toView({x:e.clientX,y:e.clientY});
+  PT.down=true; PT.downVx=v.x; PT.downVy=v.y;
+  PT.sx=v.x; PT.sy=v.y; PT.stx=state.tx; PT.sty=state.ty; PT.dragging=false; PT.moved=false;
+});
+svg.addEventListener('pointermove', function(e){
+  var v = toView({x:e.clientX,y:e.clientY});
+  if(PT.down){
+    var dx=v.x-PT.downVx, dy=v.y-PT.downVy;
+    if(!PT.dragging && Math.hypot(dx,dy) > 4){
+      PT.dragging=true; svg.classList.add('dragging');
+      try{ svg.setPointerCapture(e.pointerId); }catch(_){}
+      hideTip();
+    }
+    if(PT.dragging){
+      state.tx = PT.stx + (v.x - PT.sx);
+      state.ty = PT.sty + (v.y - PT.sy);
+      applyTransform();
+      e.preventDefault();
+    }
+  }
+  // readout lat/lon
+  var dx=(v.x-state.tx)/state.s, dy=(v.y-state.ty)/state.s;
+  var lon = b[0] + dx/VW*(b[2]-b[0]);
+  var lat = b[3] - dy/VH*(b[3]-b[1]);
+  document.getElementById('readout').textContent =
+    'lat '+lat.toFixed(5)+' · lon '+lon.toFixed(5)+' · zoom ×'+state.s.toFixed(1);
+});
+svg.addEventListener('pointerup', function(e){
+  PT.down=false; PT.dragging=false; svg.classList.remove('dragging');
+});
+svg.addEventListener('pointerleave', function(){ if(!PT.down){ svg.classList.remove('dragging'); } });
+
+/* wheel zoom */
+svg.addEventListener('wheel', function(e){
+  e.preventDefault();
+  var v=toView({x:e.clientX,y:e.clientY});
+  var factor = Math.exp(-e.deltaY * 0.0015);
+  zoomAt(v.x, v.y, factor);
+}, {passive:false});
+
+/* double-click zoom */
+var pendingSelect = null, selectAt=0;
+svg.addEventListener('dblclick', function(e){
+  e.preventDefault();
+  clearTimeout(pendingSelect);
+  var v=toView({x:e.clientX,y:e.clientY});
+  zoomAt(v.x, v.y, 1.75);
+});
+
+/* touch pinch */
+var t0={d:null};
+svg.addEventListener('touchstart', function(e){
+  if(e.touches.length===2){
+    var a=e.touches[0], b2=e.touches[1];
+    t0.d=Math.hypot(a.clientX-b2.clientX, a.clientY-b2.clientY);
+    t0.cx=(a.clientX+b2.clientX)/2; t0.cy=(a.clientY+b2.clientY)/2;
+  }
+  if(e.touches.length===1){ var v=toView({x:e.touches[0].clientX,y:e.touches[0].clientY});
+    PT.down=true; PT.downVx=v.x;PT.downVy=v.y;PT.sx=v.x;PT.sy=v.y;PT.stx=state.tx;PT.sty=state.ty;PT.dragging=false; }
+  e.preventDefault();
+},{passive:false});
+svg.addEventListener('touchmove', function(e){
+  if(e.touches.length===2 && t0.d){
+    var a=e.touches[0], b2=e.touches[1];
+    var d=Math.hypot(a.clientX-b2.clientX, a.clientY-b2.clientY);
+    if(d>0){ zoomAt(toView({x:t0.cx,y:t0.cy}).x, toView({x:t0.cx,y:t0.cy}).y, d/t0.d); t0.d=d; }
+    e.preventDefault(); return;
+  }
+  if(e.touches.length===1 && PT.down){
+    var v=toView({x:e.touches[0].clientX,y:e.touches[0].clientY});
+    var dx=v.x-PT.downVx, dy=v.y-PT.downVy;
+    if(!PT.dragging && Math.hypot(dx,dy)>4) PT.dragging=true;
+    if(PT.dragging){ state.tx=PT.stx+(v.x-PT.sx); state.ty=PT.sty+(v.y-PT.sy); applyTransform(); e.preventDefault(); }
+  }
+},{passive:false});
+svg.addEventListener('touchend', function(){ PT.down=false; PT.dragging=false; t0.d=null; });
+
+/* zoom controls */
+document.getElementById('zIn').addEventListener('click', function(){ zoomAt(centerX, centerY, 1.5); });
+document.getElementById('zOut').addEventListener('click', function(){ zoomAt(centerX, centerY, 1/1.5); });
+document.getElementById('zReset').addEventListener('click', function(){ goPreset('all'); });
+
+/* presets */
+function goPreset(name){
+  var t;
+  if(name==='kennedy') t={cx:pX(-77.0301), cy:pY(-12.1240), s:3.2};
+  else if(name==='larco') t={cx:pX(-77.0295), cy:pY(-12.1255), s:2.4};
+  else if(name==='lamar') t={cx:pX(-77.0346), cy:pY(-12.1230), s:2.6};
+  else t={cx:centerX, cy:centerY, s:1};
+  var sx=t.cx, sy=t.cy;
+  // animar hacia target
+  animateTo(t.s, sx - centerX*0, null);
+  function animateTo(ns){
+    var fs=state.s, fcx=state.tx + (sx - VW/2)*state.s, fcy=state.ty + (sy - VH/2)*state.s;
+    var ts=ns, ttx = VW/2 - sx*ns, tty = VH/2 - sy*ns;
+    var t0=performance.now(), dur=360;
+    function step(tt){
+      var k=Math.min(1,(tt-t0)/dur); k=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      state.s=fs+(ts-fs)*k; state.tx=fcx+(ttx-fcx)*k; state.ty=fcy+(tty-fcy)*k;
+      applyTransform(); updateRadii(); updateScalebar();
+      if(k<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  document.querySelectorAll('#presets .pch').forEach(function(p){ p.classList.remove('on'); });
+}
+document.querySelectorAll('#presets .pch').forEach(function(p){
+  p.addEventListener('click', function(){ goPreset(p.getAttribute('data-preset')); p.classList.add('on'); });
+});
+
+/* layer toggles */
+document.querySelectorAll('#layerPanel .lchp').forEach(function(ch){
+  ch.addEventListener('click', function(){
+    var k=ch.getAttribute('data-layer');
+    state.layers[k]=!state.layers[k];
+    ch.classList.toggle('on', state.layers[k]);
+    applyLayers();
+  });
+});
+
+/* ================= bind de elementos de datos ================= */
+function bindMZ(){
+  var ms=gMz.querySelectorAll('path.mz');
+  for(var i=0;i<ms.length;i++){
+    (function(el){
+      el.addEventListener('mousemove', function(ev){ moveTip(ev, tipMZ(+el.getAttribute('data-i'))); });
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        if(PT.dragging) return;
+        var j=+el.getAttribute('data-i');
+        scheduleSelect(function(){ clickMZ(j); });
+      });
+    })(ms[i]);
+  }
+}
+function bindStatic(){
+  bindMZ();
+  var ps=gPois.querySelectorAll('circle.poi');
+  for(var i=0;i<ps.length;i++){
+    (function(el){
+      el.addEventListener('mousemove', function(ev){ moveTip(ev, tipPOI(+el.getAttribute('data-i'))); });
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        if(PT.dragging) return;
+        var j=+el.getAttribute('data-i');
+        scheduleSelect(function(){ clickPOI(j); });
+      });
+    })(ps[i]);
+  }
+  var ls=gLotes.querySelectorAll('path.lote');
+  for(var j=0;j<ls.length;j++){
+    (function(el){
+      el.addEventListener('mousemove', function(ev){ moveTip(ev, tipLote(el)); });
+      el.addEventListener('mouseleave', hideTip);
+    })(ls[j]);
+  }
+}
+function scheduleSelect(fn){
+  clearTimeout(pendingSelect);
+  if(performance.now()-selectAt < 250){ clearTimeout(pendingSelect); return; }
+  pendingSelect = setTimeout(function(){ selectAt=performance.now(); fn(); }, 210);
+}
+
+/* ================= tooltip ================= */
+var tip=document.getElementById('tooltip');
+function moveTip(ev, html){
+  tip.innerHTML=html; tip.style.display='block';
+  var r=document.getElementById('mapwrap').getBoundingClientRect();
+  var x=ev.clientX-r.left+14, y=ev.clientY-r.top+12;
+  if(x+306>r.width) x=r.width-306-8; if(y+80>r.height) y=y-80;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip(){ tip.style.display='none'; }
+function tipMZ(i){ var m=DATA.manzanas[i]; if(!m) return '';
+  var top=Object.keys(m.cats).sort(function(a,b){return m.cats[b]-m.cats[a];}).slice(0,3).map(cleanCat).join(', ');
+  var zon = m.zonDist ? Object.keys(m.zonDist).map(function(k){return 'Z'+k+' ('+m.zonDist[k]+')';}).join(' · ') : (m.zon_vec?'Z'+m.zon_vec:'n/d');
+  return '<b>Manzana '+esc(m.cod)+'</b><br>'
+    + 'Zonificación: '+esc(zon)+'<br>'
+    + 'Lotes: '+m.n_lotes+' · área privada '+esc(fmtHa(m.area_priv_m2))+' ha<br>'
+    + 'Licencias: '+m.n_lic+' · locales visibles: '+m.poiCount+' (<span class="bad">'+m.unsup+' sin licencia</span>)'
+    + (top?'<br>Rubros: '+esc(top):'')
+    + '<br><span class="mut2">clic = ficha · doble clic = zoom</span>';
+}
+function tipPOI(i){ var p=DATA.pois[i]; if(!p) return '';
+  return '<b>'+esc(p.name||'(sin nombre)')+'</b> · '+esc(cleanCat(p.cat))+'<br>'
+    + (p.address? '<span style="color:#8be3a8;">📍 '+esc(p.address)+'</span><br>':'')
+    + 'Calle: '+esc(p.street||'—')+(p.lote? ' · lote '+esc(p.lote):'')
+    + (p.lote_zon? ' · Z'+esc(p.lote_zon):'')+'<br>'
+    + (p.resp? '<span class="ok">✔ respaldo formal en su calle</span>':'<span class="bad">✘ sin licencia compatible</span>');
+}
+function tipLote(el){
+  return '<b>Lote '+esc(el.getAttribute('data-cc'))+'</b><br>'
+    + 'Zonificación: Z'+esc(el.getAttribute('data-zv')||'n/d')
+    + ' · '+esc(el.getAttribute('data-tipo')||'');
+}
+
+/* ================= selección ================= */
+var selcard=document.getElementById('selcard');
+function clickMZ(i){
+  var m=DATA.manzanas[i]; if(!m) return;
+  state.selMZ=i; state.selPOI=null;
+  // reconstruir solo fills y bind
+  gMz.innerHTML=''; renderMzFills();
+  showCardMZ(m);
+  animateTo2(pX(m.cx), pY(m.cy), Math.max(state.s, 3.0));
+}
+function clickPOI(i){
+  var p=DATA.pois[i]; if(!p) return;
+  state.selPOI=i; state.selMZ=null; renderMzFills();
+  showCardPOI(p);
+  animateTo2(pX(p.lon), pY(p.lat), Math.max(state.s, 5.0));
+}
+function animateTo2(cx, cy, ns){
+  var ttx = VW/2 - cx*ns, tty = VH/2 - cy*ns;
+  var fs=state.s, fcx=state.tx, fcy=state.ty;
+  var t0=performance.now(), dur=360;
+  function step(tt){
+    var k=Math.min(1,(tt-t0)/dur); k=k<0.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    state.s=fs+(ns-fs)*k; state.tx=fcx+(ttx-fcx)*k; state.ty=fcy+(tty-fcy)*k;
+    applyTransform(); updateRadii(); updateScalebar();
+    if(k<1) requestAnimationFrame(step);
+  }
+  selcard.classList.add('on');
+  requestAnimationFrame(step);
+}
+document.getElementById('selClose').addEventListener('click', function(){
+  selcard.classList.remove('on'); state.selMZ=null; state.selPOI=null;
+  if(gMz) renderMzFills();
+});
+
+function zonInfo(m){
+  if(m.zonDist && Object.keys(m.zonDist).length){
+    return Object.keys(m.zonDist).sort().map(function(k){ return 'Z'+k+'·'+m.zonDist[k]; }).join('  ');
+  }
+  return m.zon_vec? 'Z'+m.zon_vec : 'n/d';
+}
+function showCardMZ(m){
+  document.getElementById('selTitle').textContent='Manzana '+m.cod;
+  var tags='';
+  if(m.zon_vec) tags+='<span class="chip">Zonif. Z'+esc(m.zon_vec)+'</span>';
+  if(m.n_lotes) tags+='<span class="chip">'+m.n_lotes+' lotes</span>';
+  document.getElementById('selTags').innerHTML=tags;
+  var pois=[]; DATA.pois.forEach(function(p,k){ if(p.mz===m.i) pois.push({p:p,k:k}); });
+  pois.sort(function(a,b){ return (a.p.resp-b.p.resp) || (a.p.cat<b.p.cat?-1:1); });
+  var top=Object.keys(m.cats).sort(function(a,b){return m.cats[b]-m.cats[a];}).slice(0,5);
+  var html='<div class="kv"><span>Zonificación dominante</span><span>'+esc(zonInfo(m))+'</span></div>'
+    + '<div class="kv"><span>Lotes catastrales</span><span>'+m.n_lotes+'</span></div>'
+    + '<div class="kv"><span>Área privada</span><span>'+esc(fmtHa(m.area_priv_m2))+' ha</span></div>'
+    + '<div class="kv"><span>Licencias</span><span>'+m.n_lic+'</span></div>'
+    + '<div class="kv"><span>Locales visibles</span><span>'+m.poiCount+'</span></div>'
+    + '<div class="kv"><span>Sin licencia compatible</span><span class="red">'+m.unsup+'</span></div>';
+  if(top.length){
+    html+='<div class="sec">Rubros presentes</div>';
+    html+='<div style="margin-top:3px;">'+top.map(function(c){return '<span style="display:inline-block;background:#eef1f5;color:var(--navy);border-radius:14px;padding:2px 8px;font-size:10.5px;margin:1px 2px 1px 0;">'+esc(cleanCat(c))+' · '+m.cats[c]+'</span>';}).join('')+'</div>';
+  }
+  html+='<div class="sec">Locales en la manzana ('+pois.length+')</div>';
+  pois.forEach(function(o){
+    html+='<div class="item" data-poi="'+o.k+'"><span class="c" style="background:'+(o.p.resp?'#2f8f5b':'#cf4440')+';"></span>'
+      + '<div><div class="nm">'+esc(o.p.name||'(sin nombre)')+'</div>'
+      + '<div class="ct">'+esc(cleanCat(o.p.cat))+(o.p.address?' · <span style="color:var(--teal);font-weight:700;">'+esc(o.p.address)+'</span>':'')+'</div></div></div>';
+  });
+  document.getElementById('selBody').innerHTML=html;
+  var items=selcard.querySelectorAll('.item');
+  for(var i=0;i<items.length;i++){
+    (function(el){ el.addEventListener('click', function(){ clickPOI(+el.getAttribute('data-poi')); }); })(items[i]);
+  }
+}
+function showCardPOI(p){
+  document.getElementById('selTitle').textContent = p.name || '(sin nombre)';
+  document.getElementById('selTags').innerHTML =
+    (p.lote? '<span class="chip">Lote '+esc(p.lote)+'</span>':'') +
+    (p.lote_zon? '<span class="chip">Z'+esc(p.lote_zon)+'</span>':'');
+  var mz=(p.mz>=0&&DATA.manzanas[p.mz])? DATA.manzanas[p.mz].cod:'—';
+  var ck=state.checked[p.lon+','+p.lat];
+  var html='<div class="kv"><span>Rubro</span><span>'+esc(cleanCat(p.cat))+'</span></div>'
+    + '<div class="kv"><span>Dirección</span><span>'+esc(p.address||p.street||'—')+'</span></div>'
+    + '<div class="kv"><span>Manzana</span><span>'+esc(mz)+'</span></div>'
+    + '<div class="kv"><span>Lote catastral</span><span>'+esc(p.lote||'n/d')+'</span></div>'
+    + '<div class="kv"><span>Zonificación del lote</span><span>'+(p.lote_zon? 'Z'+esc(p.lote_zon):'n/d')+'</span></div>'
+    + '<div class="kv"><span>Estado</span><span class="'+(p.resp?'green':'red')+'">'+(p.resp?'✔ respaldo formal':'✘ en brecha (sin licencia compatible)')+'</span></div>'
+    + (!p.resp? '<div class="kv"><span>Saneamiento estimado</span><span>'+fmtMoney(state.tariff)+'</span></div>':'')
+    + '<div style="margin-top:10px;"><label style="font-size:12px;cursor:pointer;font-weight:700;color:var(--navy);">'
+    + '<input type="checkbox" id="ckSel" '+(ck?'checked':'')+'> agregar a la bandeja de operativo</label></div>';
+  document.getElementById('selBody').innerHTML=html;
+  var cb=document.getElementById('ckSel');
+  cb.addEventListener('change', function(){ setChecked(p.lon+','+p.lat, cb.checked); renderCand(); });
+}
+function setChecked(k,on){ if(on) state.checked[k]=true; else delete state.checked[k]; }
+function isChecked(k){ return !!state.checked[k]; }
+
+/* ================= sidebar ================= */
+function modeRankKey(){ return state.mode==='desa' ? 'poiCount' : 'unsup'; }
+function renderKpis(){
+  var rev=totalUnsup*state.tariff;
+  document.getElementById('k1v').textContent=DATA.meta.mzTotal;
+  document.getElementById('k1l').textContent='manzanas · '+DATA.meta.lotesTotal+' lotes';
+  document.getElementById('k2v').textContent=fmt(totalUnsup);
+  document.getElementById('k2l').textContent='locales en brecha ('+Math.round(totalUnsup/totalPoi*100)+'%)';
+  document.getElementById('k3v').textContent=fmtMoney(rev);
+  document.getElementById('k3l').textContent='saneamiento estimado';
+  document.getElementById('mHdr').textContent = DATA.meta.mzTotal+' / '+DATA.meta.lotesTotal;
+  document.getElementById('zHdr').textContent = DATA.meta.areaEstudioHa+' ha';
+}
+function renderRank(){
+  var key=modeRankKey();
+  var arr=DATA.manzanas.slice().sort(function(a,b){ return b[key]-a[key]; }).slice(0,8);
+  var mmax=(arr.length&&arr[0][key])||1;
+  var html='';
+  arr.forEach(function(m,idx){
+    var v=m[key]; var w=Math.max(2, v/mmax*100);
+    var top=Object.keys(m.cats).sort(function(a,b){return m.cats[b]-m.cats[a];}).slice(0,2).map(cleanCat).join(' · ');
+    html+='<div class="row" data-mz="'+m.i+'"><div class="idx">'+(idx+1)+'</div>'
+      + '<div class="main"><div class="mz">MZ '+esc(m.cod)+'<span class="zbadge">Z'+(esc(m.zon_vec||'-'))+'</span></div>'
+      + '<div class="d">'+(top||'sin rubros')+'</div>'
+      + '<div class="bar'+(state.mode==='desa'?' blue':'')+'" style="width:'+w+'%"></div></div>'
+      + '<div class="num'+(state.mode==='desa'?' blue':'')+'">'+v+'</div></div>';
+  });
+  document.getElementById('rankList').innerHTML=html||'<div class="cero">Sin datos</div>';
+  var rows=document.querySelectorAll('#rankList .row');
+  for(var i=0;i<rows.length;i++){
+    (function(el){ el.addEventListener('click', function(){ clickMZ(+el.getAttribute('data-mz')); }); })(rows[i]);
+  }
+}
+function renderBars(){
+  var arr=Object.keys(catAgg).map(function(k){return{k:k,tot:catAgg[k].tot,unsup:catAgg[k].unsup};})
+    .sort(function(a,b){return b.unsup-a.unsup;}).slice(0,12);
+  var mx=(arr.length&&arr[0].unsup)||1;
+  var html='';
+  arr.forEach(function(o){
+    html+='<div class="brow"><div class="lbl"><span class="n">'+esc(cleanCat(o.k))+'</span>'
+      + '<span class="c">'+o.unsup+' de '+o.tot+' visibles en brecha</span></div>'
+      + '<div class="tr"><i style="width:'+(o.unsup/mx*100)+'%"></i></div></div>';
+  });
+  document.getElementById('rubroBars').innerHTML=html||'<div class="cero">Sin datos</div>';
+}
+function renderCand(){
+  var cands=[]; DATA.pois.forEach(function(p,k){ if(!p.resp) cands.push({p:p,k:k}); });
+  cands.sort(function(a,b){
+    var am=(a.p.mz>=0&&DATA.manzanas[a.p.mz])?DATA.manzanas[a.p.mz].unsup:0;
+    var bm=(b.p.mz>=0&&DATA.manzanas[b.p.mz])?DATA.manzanas[b.p.mz].unsup:0;
+    return bm-am;
+  });
+  var lim=40, n=0, html='';
+  cands.slice(0,lim).forEach(function(c){
+    n++;
+    var k=c.p.lon+','+c.p.lat;
+    var mz=(c.p.mz>=0&&DATA.manzanas[c.p.mz])?DATA.manzanas[c.p.mz].cod:'—';
+    html+='<label>'
+      + '<input type="checkbox" data-k="'+k+'" '+(isChecked(k)?'checked':'')+'>'
+      + '<span><b data-k="'+k+'" class="poigo">'+esc(c.p.name||'(sin nombre)')+'</b>'
+      + '<span class="mut3"> · '+esc(cleanCat(c.p.cat))+'</span>'
+      + '<br><span class="addr">'+esc(c.p.address||c.p.street||'—')+'</span>'
+      + '<span class="mut3"> · MZ '+esc(mz)+(c.p.lote? ' · lote '+esc(c.p.lote):'')+'</span></span></label>';
+  });
+  if(cands.length>lim) html+='<div class="cero">… y '+(cands.length-lim)+' más. Acércate en el mapa o exporta todo.</div>';
+  if(!n) html='<div class="cero">Sin locales en brecha en la zona.</div>';
+  document.getElementById('candList').innerHTML=html;
+  document.getElementById('candCount').textContent=cands.length+' locales';
+  var cbs=document.querySelectorAll('#candList input[type=checkbox]');
+  for(var i=0;i<cbs.length;i++){
+    (function(cb){ cb.addEventListener('change', function(){ setChecked(cb.getAttribute('data-k'), cb.checked); }); })(cbs[i]);
+  }
+  var gos=document.querySelectorAll('#candList .poigo');
+  for(var j=0;j<gos.length;j++){
+    (function(g){ g.addEventListener('click', function(ev){
+      ev.preventDefault();
+      var k=g.getAttribute('data-k');
+      var i=DATA.pois.findIndex(function(p){ return (p.lon+','+p.lat)===k; });
+      if(i>=0) clickPOI(i);
+    }); })(gos[j]);
+  }
+}
+function renderRec(){
+  var mzRank=DATA.manzanas.slice().sort(function(a,b){return b.unsup-a.unsup;});
+  var top=mzRank[0];
+  var rubRank=Object.keys(catAgg).map(function(k){return{k:k,u:catAgg[k].unsup};}).sort(function(a,b){return b.u-a.u;});
+  var txt='', act='';
+  if(state.mode==='fisc'){
+    var r1=rubRank[0]||{k:'—',u:0}, r2=rubRank[1]||{k:'—',u:0};
+    txt='Hay <b>'+totalUnsup+'</b> locales visibles sin licencia compatible en su calle. La mayor concentración está en la manzana <b>'+esc(top.cod)+'</b> ('+top.unsup+' locales).';
+    act='Priorizar ronda conjunta Fiscalización + Comercialización en MZ '+esc(top.cod)+', empezando por '+esc(cleanCat(r1.k))+' y '+esc(cleanCat(r2.k))+'.';
+  } else if(state.mode==='rentas'){
+    txt='Con <b>'+fmtMoney(state.tariff)+'</b> por local saneado, el potencial asciende a <b>'+fmtMoney(totalUnsup*state.tariff)+'</b> sobre '+totalUnsup+' locales en brecha.';
+    act='Cruzar con Rentas: verificar deuda predial/arbitrios por lote catastral antes de notificar.';
+  } else {
+    var hot=DATA.manzanas.slice().sort(function(a,b){return b.poiCount-a.poiCount;})[0];
+    txt='La zona concentra <b>'+totalPoi+'</b> locales visibles; la manzana más activa es <b>'+esc(hot.cod)+'</b> ('+hot.poiCount+' locales).';
+    act='Contrastar densidad con zonificación (Z1–Z8) para detectar saturación o vacíos y orientar nuevas licencias.';
+  }
+  document.getElementById('recText').innerHTML=txt;
+  document.getElementById('recAct').innerHTML=act;
+}
+function renderLegend(){
+  var g=document.getElementById('legendGrad');
+  var hi=document.getElementById('legendHi'), lo=document.getElementById('legendLo');
+  if(state.mode==='desa'){
+    g.style.background='linear-gradient(90deg, rgb(247,243,233), rgb(15,138,147))';
+    lo.textContent='menos locales'; hi.textContent='más locales';
+  } else {
+    g.style.background='linear-gradient(90deg, rgb(247,243,233), rgb(207,68,64))';
+    lo.textContent='menor brecha'; hi.textContent='mayor brecha';
+  }
+}
+
+/* ================= modo ================= */
+document.getElementById('focusSel').addEventListener('click', function(ev){
+  var btn=ev.target.closest('button'); if(!btn) return;
+  state.mode=btn.getAttribute('data-mode');
+  var bs=document.querySelectorAll('#focusSel button');
+  for(var i=0;i<bs.length;i++) bs[i].classList.remove('on');
+  btn.classList.add('on');
+  document.getElementById('focusSel').className='focus f'+(state.mode==='fisc'?'1':state.mode==='rentas'?'2':'3');
+  document.getElementById('recbox').className='recbox f'+(state.mode==='fisc'?'1':state.mode==='rentas'?'2':'3');
+  document.getElementById('rankList').className='rank f'+(state.mode==='fisc'?'1':state.mode==='rentas'?'2':'3');
+  renderMzFills(); renderRank(); renderRec(); renderLegend();
+});
+
+function modeClass(){ return 'f'+(state.mode==='fisc'?'1':state.mode==='rentas'?'2':'3'); }
+
+/* ================= tariff ================= */
+var tariffInput=document.getElementById('tariff');
+tariffInput.addEventListener('input', function(){
+  state.tariff=+tariffInput.value;
+  document.getElementById('tariffAmt').textContent='S/ '+fmt(state.tariff);
+  renderKpis(); renderRec();
+});
+
+/* ================= export ================= */
+function toast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.style.display='block';
+  clearTimeout(t._to); t._to=setTimeout(function(){ t.style.display='none'; },3000);
+}
+var lastCsv={text:'',name:''};
+document.getElementById('exportBtn').addEventListener('click', function(){
+  var cc=Object.keys(state.checked).length;
+  var only=cc>0;
+  var list=DATA.pois.filter(function(p){ return !p.resp && (!only || isChecked(p.lon+','+p.lat)); });
+  if(!list.length){ toast('Bandeja vacía: marca locales, o exporta sin marcar para llevarte la zona completa.'); return; }
+  var lines=['nombre,categoria,direccion,calle,manzana,lote_catastral,zonificacion,lat,lon,saneamiento_soles'];
+  list.forEach(function(p){
+    var mz=(p.mz>=0&&DATA.manzanas[p.mz])?DATA.manzanas[p.mz].cod:'';
+    var row=[p.name||'', p.cat, p.address||p.street||'', p.street||'', mz, p.lote||'', p.lote_zon||'', p.lat, p.lon, state.tariff];
+    lines.push(row.map(function(c){return '"'+String(c).replace(/"/g,'""')+'"';}).join(','));
+  });
+  var csv=lines.join('\n');
+  lastCsv={text:csv, name:'ronda_miraflores_'+list.length+'_locales.csv'};
+  document.getElementById('csvArea').value=csv;
+  document.getElementById('csvModal').classList.add('on');
+  try{
+    var blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=lastCsv.name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400);
+  }catch(e){}
+});
+document.getElementById('csvClose').addEventListener('click', function(){ document.getElementById('csvModal').classList.remove('on'); });
+document.getElementById('csvDownload').addEventListener('click', function(){
+  try{
+    var blob=new Blob([lastCsv.text],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=lastCsv.name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },400);
+  }catch(e){ toast('Descarga bloqueada aquí; usa "Copiar al portapapeles".'); }
+});
+document.getElementById('csvCopy').addEventListener('click', function(){
+  var ta=document.getElementById('csvArea');
+  ta.focus(); ta.select();
+  var ok=false;
+  try{ ok=document.execCommand('copy'); }catch(e){}
+  if(!ok && navigator.clipboard){ navigator.clipboard.writeText(lastCsv.text).then(function(){ ok=true; }).catch(function(){}); }
+  toast(ok? 'CSV copiado (primera línea = encabezados).' : 'No se pudo copiar; usa Descargar.');
+});
+document.getElementById('csvModal').addEventListener('click', function(ev){
+  if(ev.target===ev.currentTarget) this.classList.remove('on');
+});
+
+/* ================= init ================= */
+buildLayers();
+renderKpis(); renderRank(); renderBars(); renderCand(); renderRec(); renderLegend();
+applyTransform(); updateRadii(); updateScalebar();
+</script>
+</body>
+</html>

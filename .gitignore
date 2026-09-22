@@ -1,0 +1,12 @@
+# Archivos temporales / de entornos
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/
+.venv/
+.arena/
+.mypy_cache/
+.pytest_cache/
+
+# El dashboard generado se puede regenerar con `python3 build_dashboard.py`
+# (pero se versiona por comodidad para abrirlo directo desde el repo).
