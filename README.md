@@ -55,6 +55,21 @@ Inspiradas en *GIS and UX/UI Design* (L. Dorsi) y *Map UI Design* (Eleken):
   mismo punto.
 - ◫ **Modo foco**: oculta el panel lateral y deja el mapa a pantalla completa.
 
+### Feedback aplicado (v5)
+- 🌙 **Modo oscuro por defecto**: el tablero arranca en oscuro (se puede alternar
+  a claro con el botón ☀️/🌙 del encabezado); fondo del mapa, choropleth, vías,
+  lotes, numeración, labels y paneles cambian sin recargar.
+- 🎯 **Clic en manzana → resalte fuerte + zoom**: la manzana se marca con borde
+  dorado pulsante y el resto del choropleth se atenúa (efecto foco), con zoom
+  automático a **5.5×** centrado.
+- 💬 **Mensaje puntual por manzana según la categoría**:
+  - **Fiscalización**: prioridad (ALTA/media/baja), nº exacto de locales en brecha
+    y rubros que ya operan con licencia en esa manzana.
+  - **Tributación**: recaudación potencial de la manzana (brecha × tarifa),
+    locales visibles vs. licencias catastradas y cruce sugerido con rentas.
+  - **Desarrollo**: saturación/vacíos según densidad de locales, nº de lotes y
+    zonificación dominante de la manzana.
+
 ### Feedback aplicado (v4)
 - 🌙 **Modo oscuro**: toggle en el encabezado; el fondo del mapa, choropleth,
   vías, lotes, numeración, labels y paneles cambian a una paleta oscura sin
